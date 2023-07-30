@@ -1,0 +1,8 @@
+1. Add the maximum session error display and/or DB cleanse
+2. Add the possibility to ENTER to login
+3. Create PostgreSQL cron jobs
+4. Cleanup text input to NN
+5. Change NN pipeline nonsensical naming
+6. Find a nice way to overload the get_emo_breakdown function
+7. Fix the emo percentages error with the overall average overlapping with the most neutral article
+8. Check all emo percentages are calculated correctly
