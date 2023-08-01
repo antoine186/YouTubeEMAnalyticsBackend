@@ -6,8 +6,11 @@ from sqlalchemy import text
 from app_start_helper import db
 from Utils.json_encoder import GenericJsonEncoder
 import json
+from flask_mail import Mail, Message
+from threading import Thread
+from app_start_helper import mail
 
-def raw_comments_grab_append(playlist_content, username):
+def raw_comments_grab_append(playlist_content, user_id, previous_channel_analysis_id):
     try:
         for item in playlist_content['items']:
             raw_top_level_comments = []
@@ -34,15 +37,28 @@ def raw_comments_grab_append(playlist_content, username):
                                                                publisher, video_link, thumbnail)
             
             emo_breakdown_result_metadata_json_data = json.dumps(emo_breakdown_result_metadata, indent=4, cls=GenericJsonEncoder)
+
+            check_previous_video_analysis = 'SELECT youtube_schema.check_previous_video_analysis(:_previous_channel_analysis_id,:_video_id)'
+            previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis), 
+                                                              {'_previous_channel_analysis_id': previous_channel_analysis_id[0][0], '_video_id': item['contentDetails']['videoId']}).fetchall()
             
-            get_user_id = 'SELECT user_schema.get_user_id(:username)'
+            if previous_video_analysis_id[0][0] != None:
+                update_video_analysis_sp = 'CALL youtube_schema.update_video_analysis(:previous_video_analysis_id,:previous_video_analysis_json)'
+                db.session.execute(text(update_video_analysis_sp), {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'previous_video_analysis_json': emo_breakdown_result_metadata_json_data})
+                db.session.commit()
+            else:
+                add_video_analysis_sp = 'CALL youtube_schema.add_video_analysis(:video_id,:previous_channel_analysis_id,:previous_video_analysis_json)'
+                db.session.execute(text(add_video_analysis_sp), 
+                                   {'video_id': item['contentDetails']['videoId'], 'previous_channel_analysis_id': previous_channel_analysis_id[0][0], 'previous_video_analysis_json': emo_breakdown_result_metadata_json_data})
+                db.session.commit()
 
-            user_id = db.session.execute(text(get_user_id), {'username': username}).fetchall()
-
-            add_channel_analysis_sp = 'CALL youtube_schema.add_channel_analysis(:user_id,:channel_analysis_json)'
-
-            db.session.execute(text(add_channel_analysis_sp), {'user_id': user_id[0][0], 'channel_analysis_json': emo_breakdown_result_metadata_json_data})
-
-            db.session.commit()
     except Exception as e:
         print(e)
+
+        msg = Message()
+        msg.subject = 'Error when grabbing and mining top level comments for a single video'
+        msg.recipients = ['antoine186@hotmail.com']
+        msg.sender = 'noreply@emomachines.xyz'
+        msg.body = str(e)
+
+        Thread(target=mail.send(msg)).start()

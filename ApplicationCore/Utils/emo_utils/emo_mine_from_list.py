@@ -8,6 +8,9 @@ from Utils.text_divider import text_divider
 from analysis.analytical_utils.get_emo_breakdown_from_tranches import get_emo_breakdown_from_tranches
 import copy
 import math
+from flask_mail import Mail, Message
+from threading import Thread
+from app_start_helper import mail
 
 def emo_mine_from_list(text_list, video_title, published_date, publisher, video_link, thumbnail):
     emo_breakdown_results = []
@@ -75,5 +78,13 @@ def emo_mine_from_list(text_list, video_title, published_date, publisher, video_
         
     except Exception as e:
         print(e)
+
+        msg = Message()
+        msg.subject = 'Error when applying emo AI to all top level comments for a single video'
+        msg.recipients = ['antoine186@hotmail.com']
+        msg.sender = 'noreply@emomachines.xyz'
+        msg.body = str(e)
+
+        Thread(target=mail.send(msg)).start()
 
     return emo_breakdown_result_metadata
