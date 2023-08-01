@@ -3,7 +3,7 @@ from analysis.analytical_utils.update_emo_breakdown_average import update_emo_br
 from analytical_classes.emo_breakdown_result import EmoBreakdownResult
 from keybert import KeyBERT
 
-def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, main_emo_classification_nn_model, article, result, keyword_extractor_nn):
+def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, main_emo_classification_nn_model):
     tranch_counter = 0
 
     extracted_keywords_list = []
@@ -12,12 +12,6 @@ def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list
         raw_emo_breakdown = main_emo_classification_nn_model(
             tranch)
         emo_breakdown = raw_emo_breakdown[0]
-        try:
-            raw_extracted_keywords = keyword_extractor_nn.nn_model.extract_keywords(tranch, keyphrase_ngram_range=(1, 2), stop_words=None)
-        except:
-            keyword_extractor_nn = KeyBERT()
-            raw_extracted_keywords = keyword_extractor_nn.extract_keywords(article, keyphrase_ngram_range=(1, 2), stop_words=None)
-        extracted_keywords_list.extend(raw_extracted_keywords)
 
         emo_breakdown_percentage = get_emo_breakdown_percentage_simple_result(emo_breakdown)
 
@@ -58,6 +52,6 @@ def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list
         most_emo_dict['neutral']['index'] = result_counter
 
     emo_breakdown_result = EmoBreakdownResult(
-        article.title, result['description'], result['publisher']['title'], result['published date'], article.canonical_link, emo_breakdown_average, extracted_keywords_list, '')
+        video_title, 'Top Level Comment', publisher, published_date, video_link, emo_breakdown_average, extracted_keywords_list, '')
     
     return emo_breakdown_result, most_emo_dict

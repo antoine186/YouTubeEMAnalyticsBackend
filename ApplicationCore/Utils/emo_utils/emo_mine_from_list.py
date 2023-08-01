@@ -30,7 +30,7 @@ def emo_mine_from_list(text_list, video_title, published_date, publisher, video_
 
     try:
         for text in text_list:
-            if len(text) < model_max_characters_allowed:
+            if len(text) > model_max_characters_allowed:
                 raw_emo_breakdown = nn.nn_model(text)
                 emo_breakdown = raw_emo_breakdown[0]
 
@@ -48,7 +48,9 @@ def emo_mine_from_list(text_list, video_title, published_date, publisher, video_
             else:
                 tranches_list = text_divider(text, model_max_characters_allowed)
 
-                emo_breakdown_result, most_emo_dict = get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, nn.nn_model)
+                emo_breakdown_result, most_emo_dict = get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, nn.nn_model,
+                                                                                      video_title, 'Top Level Comment', publisher, published_date,
+                                                                                      video_link)
 
                 if emo_breakdown_average == None:
                     emo_breakdown_average = emo_breakdown_result.emo_breakdown
