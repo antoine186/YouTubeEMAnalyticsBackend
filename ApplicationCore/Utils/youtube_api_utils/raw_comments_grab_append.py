@@ -18,7 +18,16 @@ def raw_comments_grab_append(playlist_content, user_id, previous_channel_analysi
             published_date = item['snippet']['publishedAt']
             publisher = item['snippet']['videoOwnerChannelTitle']
             video_link = 'https://www.youtube.com/watch?v=' + item['contentDetails']['videoId']
-            thumbnail = item['snippet']['thumbnails']['maxres']['url']
+            if 'maxres' in item['snippet']['thumbnails'].keys():
+                thumbnail = item['snippet']['thumbnails']['maxres']['url']
+            elif 'high' in item['snippet']['thumbnails'].keys():
+                thumbnail = item['snippet']['thumbnails']['high']['url']
+            elif 'standard' in item['snippet']['thumbnails'].keys():
+                thumbnail = item['snippet']['thumbnails']['standard']['url']
+            elif 'medium' in item['snippet']['thumbnails'].keys():
+                thumbnail = item['snippet']['thumbnails']['medium']['url']
+            elif 'default' in item['snippet']['thumbnails'].keys():
+                thumbnail = item['snippet']['thumbnails']['default']['url']
 
             video_response = youtube_object.commentThreads().list(part='id,snippet,replies',
                                                             videoId=item['contentDetails']['videoId']

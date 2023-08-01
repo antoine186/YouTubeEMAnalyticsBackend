@@ -3,12 +3,13 @@ import json
 from app_start_helper import db
 from sqlalchemy import text
 from Utils.json_encoder import GenericJsonEncoder
-from app_start_helper import youtube_object
+from app_start_helper import youtube_object, rapidapi_key
 from app_start_helper import nn, model_max_characters_allowed
 from Utils.youtube_api_utils.raw_comments_grab_append import raw_comments_grab_append
 from flask_mail import Mail, Message
 from threading import Thread
 from app_start_helper import mail
+import requests
 
 youtube_analyse_blueprint = Blueprint('youtube_analyse_blueprint', __name__)
 
@@ -17,16 +18,33 @@ def youtube_analyse():
     payload = request.data
     payload = json.loads(payload)
 
+    print('YouTube channel analysis started!')
+
     try:
         get_user_id = 'SELECT user_schema.get_user_id(:username)'
 
         user_id = db.session.execute(text(get_user_id), {'username': payload['username']}).fetchall()
 
+        """
         channel = youtube_object.channels().list(
             id = payload['channelInput'],
             part = 'contentDetails',
             maxResults = 10
         ).execute()
+        """
+
+        url = "https://youtube-v31.p.rapidapi.com/channels"
+
+        querystring = {"part":"contentDetails","id":payload['channelInput']}
+
+        headers = {
+            "X-RapidAPI-Key": rapidapi_key,
+            "X-RapidAPI-Host": "youtube-v31.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+
+        channel = json.loads(response.text)
 
         main_uploads_id = channel['items'][0]['contentDetails']['relatedPlaylists']['uploads']
 
@@ -49,13 +67,33 @@ def youtube_analyse():
 
         raw_comments_grab_append(playlist_content, user_id, previous_channel_analysis_id)
 
-        print()
+        while 'nextPageToken' in playlist_content.keys() and playlist_content['nextPageToken'] != '':
+                playlist_content = youtube_object.playlistItems().list(
+                    playlistId = main_uploads_id,
+                    part = 'snippet,contentDetails,id',
+                    pageToken = playlist_content['nextPageToken']
+                ).execute()
+
+                raw_comments_grab_append(playlist_content, user_id, previous_channel_analysis_id)
+
+        print('YouTube channel analysis done!')
+
+        operation_response = {
+            "operation_success": True,
+            "responsePayload": {
+            },
+            "error_message": ""
+        }
+        response = make_response(json.dumps(operation_response))
+        return response
+        
     except Exception as e:
         operation_response = {
             "operation_success": False,
             "responsePayload": {
+                 e.status_code
             },
-            "error_message": ""
+            "error_message": "YouTube API quota exceeded"
         }
         response = make_response(json.dumps(operation_response))
 

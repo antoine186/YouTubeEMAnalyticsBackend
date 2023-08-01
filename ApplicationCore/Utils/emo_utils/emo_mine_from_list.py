@@ -1,10 +1,10 @@
-from app_start_helper import nn, model_max_characters_allowed
+from app_start_helper import nn, model_max_characters_allowed, model_max_words_allowed
 from analysis.analytical_utils.get_emo_breakdown_percentage import get_emo_breakdown_percentage
 from analytical_classes.emo_breakdown_result_metadata import EmoBreakdownResultMetadata
 from analysis.analytical_utils.update_emo_breakdown_average import update_emo_breakdown_average
 from Utils.results_sort_based_on_emo import results_sort_based_on_emo
 from analytical_classes.emo_breakdown_result import EmoBreakdownResult
-from Utils.text_divider import text_divider
+from Utils.text_divider_by_word_count import text_divider_by_word_count
 from analysis.analytical_utils.get_emo_breakdown_from_tranches import get_emo_breakdown_from_tranches
 import copy
 import math
@@ -30,7 +30,7 @@ def emo_mine_from_list(text_list, video_title, published_date, publisher, video_
 
     try:
         for text in text_list:
-            if len(text) > model_max_characters_allowed:
+            if len(text.split()) < model_max_words_allowed and len(text) < model_max_characters_allowed:
                 raw_emo_breakdown = nn.nn_model(text)
                 emo_breakdown = raw_emo_breakdown[0]
 
@@ -46,11 +46,11 @@ def emo_mine_from_list(text_list, video_title, published_date, publisher, video_
                 emo_breakdown_results.append(emo_breakdown_result)
                 result_counter += 1
             else:
-                tranches_list = text_divider(text, model_max_characters_allowed)
+                tranches_list = text_divider_by_word_count(text, model_max_characters_allowed)
 
                 emo_breakdown_result, most_emo_dict = get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, nn.nn_model,
                                                                                       video_title, 'Top Level Comment', publisher, published_date,
-                                                                                      video_link)
+                                                                                      video_link, text, thumbnail)
 
                 if emo_breakdown_average == None:
                     emo_breakdown_average = emo_breakdown_result.emo_breakdown

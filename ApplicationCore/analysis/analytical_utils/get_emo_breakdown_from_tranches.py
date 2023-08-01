@@ -4,14 +4,18 @@ from analytical_classes.emo_breakdown_result import EmoBreakdownResult
 from keybert import KeyBERT
 
 def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, main_emo_classification_nn_model,
-                                    video_title, description, publisher, published_date, video_link):
+                                    video_title, description, publisher, published_date, video_link, text, thumbnail):
     tranch_counter = 0
 
     extracted_keywords_list = []
 
     for tranch in tranches_list:
-        raw_emo_breakdown = main_emo_classification_nn_model(
-            tranch)
+        xyz = len(tranch)
+        try:
+            raw_emo_breakdown = main_emo_classification_nn_model(
+                tranch)
+        except Exception as e:
+            print(e)
         emo_breakdown = raw_emo_breakdown[0]
 
         emo_breakdown_percentage = get_emo_breakdown_percentage_simple_result(emo_breakdown)
@@ -53,6 +57,6 @@ def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list
         most_emo_dict['neutral']['index'] = result_counter
 
     emo_breakdown_result = EmoBreakdownResult(
-        video_title, description, publisher, published_date, video_link, emo_breakdown_average, extracted_keywords_list, '')
+        video_title, description, publisher, published_date, video_link, emo_breakdown_average, '', text, thumbnail)
     
     return emo_breakdown_result, most_emo_dict

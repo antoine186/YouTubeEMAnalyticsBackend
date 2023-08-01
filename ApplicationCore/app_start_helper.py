@@ -34,7 +34,8 @@ container.wire(modules=[sys.modules[__name__]])
 paths = Container.resources_path()
 nn = Container.pipeline_neural_network()
 #keyword_extractor_nn = Container.keyword_extractor_neural_network()
-model_max_characters_allowed = 400
+model_max_characters_allowed = 600
+model_max_words_allowed = 300
 
 DEVELOPER_KEY = "AIzaSyAodk67-ODzonfyWsYp4gnuasgxAm0cNJI"
 YOUTUBE_API_SERVICE_NAME = "youtube"
@@ -42,3 +43,5 @@ YOUTUBE_API_VERSION = "v3"
 
 youtube_object = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
                                         developerKey = DEVELOPER_KEY)
+
+rapidapi_key = "2b15b711e0msh4c5b33d95d9470dp1d558bjsn4dc897e8f19f"
