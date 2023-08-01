@@ -3,7 +3,8 @@ from analysis.analytical_utils.update_emo_breakdown_average import update_emo_br
 from analytical_classes.emo_breakdown_result import EmoBreakdownResult
 from keybert import KeyBERT
 
-def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, main_emo_classification_nn_model):
+def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, main_emo_classification_nn_model,
+                                    video_title, description, publisher, published_date, video_link):
     tranch_counter = 0
 
     extracted_keywords_list = []
@@ -52,6 +53,6 @@ def get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list
         most_emo_dict['neutral']['index'] = result_counter
 
     emo_breakdown_result = EmoBreakdownResult(
-        video_title, 'Top Level Comment', publisher, published_date, video_link, emo_breakdown_average, extracted_keywords_list, '')
+        video_title, description, publisher, published_date, video_link, emo_breakdown_average, extracted_keywords_list, '')
     
     return emo_breakdown_result, most_emo_dict
