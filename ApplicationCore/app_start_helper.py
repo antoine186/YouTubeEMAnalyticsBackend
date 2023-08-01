@@ -8,6 +8,8 @@ from flask_mail import Mail, Message
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from apiclient.discovery import build
+
 app = Flask(__name__)
 app.config.from_object('config')
 
@@ -31,5 +33,12 @@ container.wire(modules=[sys.modules[__name__]])
 
 paths = Container.resources_path()
 nn = Container.pipeline_neural_network()
-keyword_extractor_nn = Container.keyword_extractor_neural_network()
+#keyword_extractor_nn = Container.keyword_extractor_neural_network()
 model_max_characters_allowed = 400
+
+DEVELOPER_KEY = "AIzaSyAodk67-ODzonfyWsYp4gnuasgxAm0cNJI"
+YOUTUBE_API_SERVICE_NAME = "youtube"
+YOUTUBE_API_VERSION = "v3"
+
+youtube_object = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
+                                        developerKey = DEVELOPER_KEY)

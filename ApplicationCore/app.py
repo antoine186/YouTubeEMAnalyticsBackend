@@ -4,13 +4,13 @@ sys.path.append('ApplicationCore/routes')
 sys.path.append('ApplicationCore/scheduled_jobs')
 from scheduled_jobs.session_kick import session_kick
 from scheduled_jobs.apscheduler_start_cleanup import apscheduler_start_cleanup
-from scheduled_jobs.tagging_update import tagging_update
+#from scheduled_jobs.tagging_update import tagging_update
 
 from app_start_helper import app, db
 from main_pages.main_page_blueprint import main_page_blueprint
 from authentication.authentication_blueprint import authentication_blueprint
 from authentication.session_authentication_blueprint import session_authentication_blueprint
-from search.emo_search_blueprint import emo_search_blueprint
+#from search.emo_search_blueprint import emo_search_blueprint
 from account_data.basic_account_creation_blueprint import basic_account_creation_blueprint
 from payment.stripe_customer_creation_blueprint import stripe_customer_creation_blueprint
 from payment.subscription_creation_blueprint import subscription_creation_blueprint
@@ -27,27 +27,28 @@ from payment.delete_subscription_blueprint import delete_subscription_blueprint
 from authentication.forgot_password_blueprint import forgot_password_blueprint
 from authentication.password_reset_blueprint import password_reset_blueprint
 from search.get_previous_search_result_blueprint import get_previous_search_result_blueprint
-from search.tagging_search_blueprint import tagging_search_blueprint
-from search.get_tagging_inputs_blueprint import get_tagging_inputs_blueprint
-from search.save_tagging_inputs_blueprint import save_tagging_inputs_blueprint
-from search.update_tagging_inputs_blueprint import update_tagging_inputs_blueprint
-from search.get_previous_tagging_result_blueprint import get_previous_tagging_result_blueprint
-from search.delete_tag_blueprint import delete_tag_blueprint
-from search.delete_tagging_inputs_blueprint import delete_tagging_inputs_blueprint
-from search.progression_charting_blueprint import progression_charting_blueprint
-from search.get_previous_charting_blueprint import get_previous_charting_blueprint
-from search.linking_blueprint import linking_blueprint
-from search.get_previous_linking_blueprint import get_previous_linking_blueprint
+#from search.tagging_search_blueprint import tagging_search_blueprint
+#from search.get_tagging_inputs_blueprint import get_tagging_inputs_blueprint
+#from search.save_tagging_inputs_blueprint import save_tagging_inputs_blueprint
+#from search.update_tagging_inputs_blueprint import update_tagging_inputs_blueprint
+#from search.get_previous_tagging_result_blueprint import get_previous_tagging_result_blueprint
+#from search.delete_tag_blueprint import delete_tag_blueprint
+#from search.delete_tagging_inputs_blueprint import delete_tagging_inputs_blueprint
+#from search.progression_charting_blueprint import progression_charting_blueprint
+#from search.get_previous_charting_blueprint import get_previous_charting_blueprint
+#from search.linking_blueprint import linking_blueprint
+#from search.get_previous_linking_blueprint import get_previous_linking_blueprint
 from payment.create_checkout_blueprint import create_checkout_blueprint
-from search.check_still_searching_blueprint import check_still_searching_blueprint
-from search.check_still_charting_blueprint import check_still_charting_blueprint
-from search.tweet_emo_mine_blueprint import tweet_emo_mine_blueprint
+#from search.check_still_searching_blueprint import check_still_searching_blueprint
+#from search.check_still_charting_blueprint import check_still_charting_blueprint
+#from search.tweet_emo_mine_blueprint import tweet_emo_mine_blueprint
+from youtube_channel.youtube_analyse_blueprint import youtube_analyse_blueprint
 
 # app.register_blueprint(user_bp, url_prefix='/users')
 app.register_blueprint(main_page_blueprint)
 app.register_blueprint(authentication_blueprint)
 app.register_blueprint(session_authentication_blueprint)
-app.register_blueprint(emo_search_blueprint)
+#app.register_blueprint(emo_search_blueprint)
 app.register_blueprint(basic_account_creation_blueprint)
 app.register_blueprint(stripe_customer_creation_blueprint)
 app.register_blueprint(subscription_creation_blueprint)
@@ -64,27 +65,28 @@ app.register_blueprint(delete_subscription_blueprint)
 app.register_blueprint(forgot_password_blueprint)
 app.register_blueprint(password_reset_blueprint)
 app.register_blueprint(get_previous_search_result_blueprint)
-app.register_blueprint(tagging_search_blueprint)
-app.register_blueprint(get_tagging_inputs_blueprint)
-app.register_blueprint(save_tagging_inputs_blueprint)
-app.register_blueprint(update_tagging_inputs_blueprint)
-app.register_blueprint(get_previous_tagging_result_blueprint)
-app.register_blueprint(delete_tag_blueprint)
-app.register_blueprint(delete_tagging_inputs_blueprint)
-app.register_blueprint(progression_charting_blueprint)
-app.register_blueprint(get_previous_charting_blueprint)
-app.register_blueprint(linking_blueprint)
-app.register_blueprint(get_previous_linking_blueprint)
+#app.register_blueprint(tagging_search_blueprint)
+#app.register_blueprint(get_tagging_inputs_blueprint)
+#app.register_blueprint(save_tagging_inputs_blueprint)
+#app.register_blueprint(update_tagging_inputs_blueprint)
+#app.register_blueprint(get_previous_tagging_result_blueprint)
+#app.register_blueprint(delete_tag_blueprint)
+#app.register_blueprint(delete_tagging_inputs_blueprint)
+#app.register_blueprint(progression_charting_blueprint)
+#app.register_blueprint(get_previous_charting_blueprint)
+#app.register_blueprint(linking_blueprint)
+#app.register_blueprint(get_previous_linking_blueprint)
 app.register_blueprint(create_checkout_blueprint)
-app.register_blueprint(check_still_searching_blueprint)
-app.register_blueprint(check_still_charting_blueprint)
-app.register_blueprint(tweet_emo_mine_blueprint)
+#app.register_blueprint(check_still_searching_blueprint)
+#app.register_blueprint(check_still_charting_blueprint)
+#app.register_blueprint(tweet_emo_mine_blueprint)
+app.register_blueprint(youtube_analyse_blueprint)
 
 with app.app_context():
     db.init_app(app)
 
     session_kick()
-    tagging_update()
+    #tagging_update()
     apscheduler_start_cleanup()
 
 if __name__ == '__main__':

@@ -1,3 +1,6 @@
+import sys
+sys.path.append('ApplicationCore/analysis')
+
 from analytical_classes.emo_breakdown_percentage import EmoBreakdownPercentage
 
 def get_emo_breakdown_percentage(emo_breakdown, result_counter, most_emo_dict):
