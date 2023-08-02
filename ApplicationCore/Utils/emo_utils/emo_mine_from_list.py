@@ -28,6 +28,8 @@ def emo_mine_from_list(text_list, video_title, published_date, publisher, video_
     result_counter = 0
     emo_breakdown_average = None
 
+    print('Currently emo mining all comments for video ' + video_title)
+
     try:
         for text in text_list:
             if len(text.split()) < model_max_words_allowed and len(text) < model_max_characters_allowed:
@@ -46,7 +48,7 @@ def emo_mine_from_list(text_list, video_title, published_date, publisher, video_
                 emo_breakdown_results.append(emo_breakdown_result)
                 result_counter += 1
             else:
-                tranches_list = text_divider_by_word_count(text, model_max_characters_allowed)
+                tranches_list = text_divider_by_word_count(text, model_max_words_allowed)
 
                 emo_breakdown_result, most_emo_dict = get_emo_breakdown_from_tranches(result_counter, most_emo_dict, tranches_list, nn.nn_model,
                                                                                       video_title, 'Top Level Comment', publisher, published_date,

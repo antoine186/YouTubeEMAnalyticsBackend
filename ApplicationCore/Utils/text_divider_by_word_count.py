@@ -25,6 +25,7 @@ def text_divider_by_word_count(article_text, max_words_allowed):
             inner_tranches_list = text_divider(mini_tranch_string, model_max_characters_allowed)
             tranches_list = tranches_list + inner_tranches_list
 
+        print('Length of current mini tranch ' + str(len(mini_tranch_string)))
         tranches_list.append(mini_tranch_string)
 
         slit_bottom_index = slit_ceiling_index

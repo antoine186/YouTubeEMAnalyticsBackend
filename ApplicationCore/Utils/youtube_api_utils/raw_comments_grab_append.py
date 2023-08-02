@@ -32,10 +32,13 @@ def raw_comments_grab_append(playlist_content, user_id, previous_channel_analysi
             video_response = youtube_object.commentThreads().list(part='id,snippet,replies',
                                                             videoId=item['contentDetails']['videoId']
                                                             ).execute()
+            
+            print('First mining of new video ' + video_title)
 
             raw_top_level_comments = unpack_youtube_top_level_comments(video_response['items'], raw_top_level_comments)
 
             while 'nextPageToken' in video_response.keys() and video_response['nextPageToken'] != '':
+                print('Getting to the next pageToken for ' + video_title)
                 video_response = youtube_object.commentThreads().list(part='id,snippet,replies',
                                                                     videoId=item['contentDetails']['videoId'],
                                                                     pageToken=video_response['nextPageToken']).execute()
@@ -44,6 +47,8 @@ def raw_comments_grab_append(playlist_content, user_id, previous_channel_analysi
         
             emo_breakdown_result_metadata = emo_mine_from_list(raw_top_level_comments, video_title, published_date,
                                                                publisher, video_link, thumbnail)
+            
+            print('Saving video for ' + video_title)
             
             emo_breakdown_result_metadata_json_data = json.dumps(emo_breakdown_result_metadata, indent=4, cls=GenericJsonEncoder)
 

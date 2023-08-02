@@ -38,6 +38,9 @@ CREATE TABLE youtube_schema.previous_video_analysis
 ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis
     OWNER to postgres;
 
+ALTER TABLE youtube_schema.previous_video_analysis
+    ALTER COLUMN previous_video_analysis_json TYPE text COLLATE pg_catalog."default";
+
 CREATE FUNCTION youtube_schema.check_previous_channel_analysis(_user_id bigint, _channel_id character varying)
     RETURNS bigint
     LANGUAGE 'sql'
@@ -102,14 +105,14 @@ $BODY$;
 ALTER PROCEDURE youtube_schema.delete_channel_analysis(bigint, character varying)
     OWNER TO postgres;
 
-CREATE PROCEDURE youtube_schema.update_video_analysis(_previous_video_analysis_id bigint, _previous_video_analysis_json character varying)
+CREATE PROCEDURE youtube_schema.update_video_analysis(_previous_video_analysis_id bigint, _previous_video_analysis_json text)
 LANGUAGE 'sql'
 AS $BODY$
 UPDATE youtube_schema.previous_video_analysis
 SET previous_video_analysis_json = _previous_video_analysis_json
 WHERE previous_video_analysis_id = _previous_video_analysis_id
 $BODY$;
-ALTER PROCEDURE youtube_schema.update_video_analysis(bigint, character varying)
+ALTER PROCEDURE youtube_schema.update_video_analysis(bigint, text)
     OWNER TO postgres;
 
 CREATE PROCEDURE youtube_schema.add_channel_analysis(_user_id bigint, _channel_id character varying)
@@ -133,3 +136,35 @@ VALUES
 $BODY$;
 ALTER PROCEDURE youtube_schema.add_video_analysis(character varying, bigint, character varying)
     OWNER TO postgres;
+
+CREATE FUNCTION youtube_schema.get_previous_video_analysis(_previous_video_analysis_id bigint)
+    RETURNS text
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT previous_video_analysis_json
+FROM youtube_schema.previous_video_analysis
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+
+ALTER FUNCTION youtube_schema.get_previous_video_analysis(bigint)
+    OWNER TO postgres;
+
+CREATE FUNCTION youtube_schema.get_all_channel_videos(_previous_channel_analysis_id bigint)
+    RETURNS character varying
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT video_id
+FROM youtube_schema.previous_video_analysis
+WHERE previous_channel_analysis_id = _previous_channel_analysis_id
+$BODY$;
+
+ALTER FUNCTION youtube_schema.get_all_channel_videos(bigint)
+    OWNER TO postgres;
+
+ALTER FUNCTION youtube_schema.get_all_channel_videos(bigint)
+    RENAME TO get_all_channel_video_ids;
+
+ALTER TABLE youtube_schema.previous_video_analysis
+    ALTER COLUMN video_id TYPE character varying(50) COLLATE pg_catalog."default";

@@ -67,6 +67,7 @@ def youtube_analyse():
 
         raw_comments_grab_append(playlist_content, user_id, previous_channel_analysis_id)
 
+        """
         while 'nextPageToken' in playlist_content.keys() and playlist_content['nextPageToken'] != '':
                 playlist_content = youtube_object.playlistItems().list(
                     playlistId = main_uploads_id,
@@ -77,6 +78,7 @@ def youtube_analyse():
                 raw_comments_grab_append(playlist_content, user_id, previous_channel_analysis_id)
 
         print('YouTube channel analysis done!')
+        """
 
         operation_response = {
             "operation_success": True,
