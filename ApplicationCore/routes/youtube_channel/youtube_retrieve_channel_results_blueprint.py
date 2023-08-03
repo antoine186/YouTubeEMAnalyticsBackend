@@ -37,7 +37,7 @@ def youtube_analyse():
         video_counter = 0
         for previous_video_analysis in previous_video_analyses:
             if video_counter < 5:
-                top_5_videos.append(json.loads(previous_video_analyses[video_counter].previous_video_analysis_json))
+                top_5_videos.append(json.loads(previous_video_analysis.previous_video_analysis_json))
             else:
                 break
             video_counter += 1

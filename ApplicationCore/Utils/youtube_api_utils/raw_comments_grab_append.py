@@ -17,7 +17,7 @@ def raw_comments_grab_append(playlist_content, user_id, previous_channel_analysi
             video_title = item['snippet']['title']
             published_date = item['snippet']['publishedAt']
             publisher = item['snippet']['videoOwnerChannelTitle']
-            video_link = 'https://www.youtube.com/watch?v=' + item['contentDetails']['videoId']
+            video_link = 'https://www.youtube.com/embed/' + item['contentDetails']['videoId']
             if 'maxres' in item['snippet']['thumbnails'].keys():
                 thumbnail = item['snippet']['thumbnails']['maxres']['url']
             elif 'high' in item['snippet']['thumbnails'].keys():
@@ -33,6 +33,20 @@ def raw_comments_grab_append(playlist_content, user_id, previous_channel_analysi
                                                             videoId=item['contentDetails']['videoId']
                                                             ).execute()
             
+            check_previous_video_analysis = 'SELECT youtube_schema.check_previous_video_analysis(:_previous_channel_analysis_id,:_video_id)'
+            previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis), 
+                                                              {'_previous_channel_analysis_id': previous_channel_analysis_id[0][0], '_video_id': item['contentDetails']['videoId']}).fetchall()
+            
+            if previous_video_analysis_id[0][0] == None:
+                seed_video_analysis_sp = 'CALL youtube_schema.seed_video_analysis(:video_id,:previous_channel_analysis_id)'
+                db.session.execute(text(seed_video_analysis_sp), 
+                                   {'video_id': item['contentDetails']['videoId'], 'previous_channel_analysis_id': previous_channel_analysis_id[0][0]})
+                db.session.commit()
+
+                check_previous_video_analysis = 'SELECT youtube_schema.check_previous_video_analysis(:_previous_channel_analysis_id,:_video_id)'
+                previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis), 
+                            {'_previous_channel_analysis_id': previous_channel_analysis_id[0][0], '_video_id': item['contentDetails']['videoId']}).fetchall()
+            
             print('First mining of new video ' + video_title)
 
             raw_top_level_comments = unpack_youtube_top_level_comments(video_response['items'], raw_top_level_comments)
@@ -45,26 +59,24 @@ def raw_comments_grab_append(playlist_content, user_id, previous_channel_analysi
                 
                 raw_top_level_comments = unpack_youtube_top_level_comments(video_response['items'], raw_top_level_comments)
         
-            emo_breakdown_result_metadata = emo_mine_from_list(raw_top_level_comments, video_title, published_date,
-                                                               publisher, video_link, thumbnail)
+            emo_breakdown_result_metadata, emo_breakdown_results = emo_mine_from_list(raw_top_level_comments, video_title, published_date,
+                                                               publisher, video_link, thumbnail, previous_video_analysis_id[0][0])
             
             print('Saving video for ' + video_title)
             
             emo_breakdown_result_metadata_json_data = json.dumps(emo_breakdown_result_metadata, indent=4, cls=GenericJsonEncoder)
 
+            update_video_analysis_sp = 'CALL youtube_schema.update_video_analysis(:previous_video_analysis_id,:previous_video_analysis_json)'
+            db.session.execute(text(update_video_analysis_sp), 
+                                   {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'previous_video_analysis_json': emo_breakdown_result_metadata_json_data})
+            db.session.commit()
+
             check_previous_video_analysis = 'SELECT youtube_schema.check_previous_video_analysis(:_previous_channel_analysis_id,:_video_id)'
             previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis), 
-                                                              {'_previous_channel_analysis_id': previous_channel_analysis_id[0][0], '_video_id': item['contentDetails']['videoId']}).fetchall()
-            
-            if previous_video_analysis_id[0][0] != None:
-                update_video_analysis_sp = 'CALL youtube_schema.update_video_analysis(:previous_video_analysis_id,:previous_video_analysis_json)'
-                db.session.execute(text(update_video_analysis_sp), {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'previous_video_analysis_json': emo_breakdown_result_metadata_json_data})
-                db.session.commit()
-            else:
-                add_video_analysis_sp = 'CALL youtube_schema.add_video_analysis(:video_id,:previous_channel_analysis_id,:previous_video_analysis_json)'
-                db.session.execute(text(add_video_analysis_sp), 
-                                   {'video_id': item['contentDetails']['videoId'], 'previous_channel_analysis_id': previous_channel_analysis_id[0][0], 'previous_video_analysis_json': emo_breakdown_result_metadata_json_data})
-                db.session.commit()
+                            {'_previous_channel_analysis_id': previous_channel_analysis_id[0][0], '_video_id': item['contentDetails']['videoId']}).fetchall()
+
+            for emo_breakdown_result in emo_breakdown_results:
+                save_comment_emo(previous_video_analysis_id[0][0], emo_breakdown_result)
 
     except Exception as e:
         print(e)
@@ -76,3 +88,10 @@ def raw_comments_grab_append(playlist_content, user_id, previous_channel_analysi
         msg.body = str(e)
 
         Thread(target=mail.send(msg)).start()
+
+def save_comment_emo(previous_video_analysis_id, comment_emo):
+    add_comment_emo_sp = 'CALL youtube_schema.add_comment_emo(:previous_video_analysis_id,:comment_emo)'
+    db.session.execute(text(add_comment_emo_sp), {'previous_video_analysis_id': previous_video_analysis_id, 
+                                                  'comment_emo': json.dumps(comment_emo, indent=4, cls=GenericJsonEncoder)})
+    db.session.commit()
+

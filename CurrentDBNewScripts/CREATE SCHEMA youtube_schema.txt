@@ -168,3 +168,111 @@ ALTER FUNCTION youtube_schema.get_all_channel_videos(bigint)
 
 ALTER TABLE youtube_schema.previous_video_analysis
     ALTER COLUMN video_id TYPE character varying(50) COLLATE pg_catalog."default";
+
+CREATE PROCEDURE youtube_schema.delete_video_analysis(_previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.previous_video_analysis
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_video_analysis(bigint)
+    OWNER TO postgres;
+
+CREATE TABLE youtube_schema.comment_emo_breakdown
+(
+    comment_emo_id bigint NOT NULL,
+    previous_video_analysis_id bigint NOT NULL,
+    comment_emo text NOT NULL,
+    PRIMARY KEY (comment_emo_id)
+);
+
+ALTER TABLE IF EXISTS youtube_schema.comment_emo_breakdown
+    OWNER to postgres;
+
+ALTER TABLE IF EXISTS youtube_schema.comment_emo_breakdown
+    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
+    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
+    ON youtube_schema.comment_emo_breakdown(previous_video_analysis_id);
+
+ALTER TABLE IF EXISTS youtube_schema.comment_emo_breakdown
+    ALTER COLUMN comment_emo_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+
+CREATE PROCEDURE youtube_schema.add_comment_emo(_previous_video_analysis_id bigint, _comment_emo text)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO youtube_schema.comment_emo_breakdown
+(previous_video_analysis_id, comment_emo)
+VALUES
+(_previous_video_analysis_id, _comment_emo)
+$BODY$;
+ALTER PROCEDURE youtube_schema.add_comment_emo(bigint, text)
+    OWNER TO postgres;
+
+CREATE TABLE youtube_schema.top_n_emotions
+(
+    top_n_emotions_id bigint NOT NULL,
+    previous_video_analysis_id bigint NOT NULL,
+    top_n_anger text,
+    top_n_disgust text,
+    top_n_fear text,
+    top_n_joy text,
+    top_n_neutral text,
+    top_n_sadness text,
+    top_n_surprise text,
+    PRIMARY KEY (top_n_emotions_id)
+);
+
+ALTER TABLE IF EXISTS youtube_schema.top_n_emotions
+    OWNER to postgres;
+
+ALTER TABLE IF EXISTS youtube_schema.top_n_emotions
+    ALTER COLUMN top_n_emotions_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+
+ALTER TABLE IF EXISTS youtube_schema.top_n_emotions
+    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
+    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
+    ON youtube_schema.top_n_emotions(previous_video_analysis_id);
+
+CREATE PROCEDURE youtube_schema.delete_top_n_emotions(_previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.top_n_emotions
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_top_n_emotions(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.add_top_n_emotions(_previous_video_analysis_id bigint, _top_n_anger text, _top_n_disgust text, _top_n_fear text, _top_n_joy text, _top_n_neutral text, _top_n_sadness text, _top_n_surprise text)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO youtube_schema.top_n_emotions
+(previous_video_analysis_id, top_n_anger, top_n_disgust, top_n_fear,
+top_n_joy, top_n_neutral, top_n_sadness, top_n_surprise)
+VALUES
+(_previous_video_analysis_id, _top_n_anger, _top_n_disgust, _top_n_fear,
+_top_n_joy, _top_n_neutral, _top_n_sadness, _top_n_surprise)
+$BODY$;
+ALTER PROCEDURE youtube_schema.add_top_n_emotions(bigint, text, text, text, text, text, text, text)
+    OWNER TO postgres;
+
+ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis
+    ALTER COLUMN previous_video_analysis_json DROP NOT NULL;
+
+CREATE PROCEDURE youtube_schema.seed_video_analysis(_video_id character varying, _previous_channel_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO youtube_schema.previous_video_analysis 
+(video_id, previous_channel_analysis_id)
+VALUES 
+(_video_id, _previous_channel_analysis_id)
+$BODY$;
+ALTER PROCEDURE youtube_schema.seed_video_analysis(character varying, bigint)
+    OWNER TO postgres;
