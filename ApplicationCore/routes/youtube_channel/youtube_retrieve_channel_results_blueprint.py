@@ -4,6 +4,7 @@ from app_start_helper import db
 from sqlalchemy import text
 from Utils.json_encoder import GenericJsonEncoder
 from models.previous_video_analysis import PreviousVideoAnalysis
+from models.top_n_emotions import TopNEmotions
 
 youtube_retrieve_channel_results_blueprint = Blueprint('youtube_retrieve_channel_results_blueprint', __name__)
 
@@ -14,7 +15,7 @@ def youtube_analyse():
 
     check_previous_channel_analysis = 'SELECT youtube_schema.check_previous_channel_analysis(:user_id,:channel_id)'
 
-    previous_channel_analysis_id = db.session.execute(text(check_previous_channel_analysis), {'user_id': '291', 'channel_id': 'UCHL9bfHTxCMi-7vfxQ-AYtg'}).fetchall()
+    previous_channel_analysis_id = db.session.execute(text(check_previous_channel_analysis), {'user_id': 293, 'channel_id': 'UCHL9bfHTxCMi-7vfxQ-AYtg'}).fetchall()
 
     top_5_videos = []
 
@@ -37,6 +38,16 @@ def youtube_analyse():
         video_counter = 0
         for previous_video_analysis in previous_video_analyses:
             if video_counter < 5:
+                previous_top_n_emotions = TopNEmotions.query.filter(TopNEmotions.previous_video_analysis_id == previous_video_analysis.previous_video_analysis_id).all()
+
+                top_n_anger = json.loads(previous_top_n_emotions[0].top_n_anger)
+                top_n_disgust = json.loads(previous_top_n_emotions[0].top_n_disgust)
+                top_n_fear = json.loads(previous_top_n_emotions[0].top_n_fear)
+                top_n_joy = json.loads(previous_top_n_emotions[0].top_n_joy)
+                top_n_neutral = json.loads(previous_top_n_emotions[0].top_n_neutral)
+                top_n_sadness = json.loads(previous_top_n_emotions[0].top_n_sadness)
+                top_n_surprise = json.loads(previous_top_n_emotions[0].top_n_surprise)
+
                 top_5_videos.append(json.loads(previous_video_analysis.previous_video_analysis_json))
             else:
                 break
@@ -45,7 +56,14 @@ def youtube_analyse():
     operation_response = {
         "operation_success": True,
         "responsePayload": {
-             'top_5_videos': top_5_videos
+             'top_5_videos': top_5_videos,
+             'top_n_anger': top_n_anger,
+             'top_n_disgust': top_n_disgust,
+             'top_n_fear': top_n_fear,
+             'top_n_joy': top_n_joy,
+             'top_n_neutral': top_n_neutral,
+             'top_n_sadness': top_n_sadness,
+             'top_n_surprise': top_n_surprise
         },
     }
     response = make_response(json.dumps(operation_response))
