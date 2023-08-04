@@ -18,6 +18,13 @@ def youtube_analyse():
     previous_channel_analysis_id = db.session.execute(text(check_previous_channel_analysis), {'user_id': 293, 'channel_id': 'UCHL9bfHTxCMi-7vfxQ-AYtg'}).fetchall()
 
     top_5_videos = []
+    top_5_top_n_anger = []
+    top_5_top_n_disgust = []
+    top_5_top_n_fear = []
+    top_5_top_n_joy = []
+    top_5_top_n_neutral = []
+    top_5_top_n_sadness = []
+    top_5_top_n_surprise = []
 
     if previous_channel_analysis_id[0][0] == None:
         operation_response = {
@@ -48,6 +55,14 @@ def youtube_analyse():
                 top_n_sadness = json.loads(previous_top_n_emotions[0].top_n_sadness)
                 top_n_surprise = json.loads(previous_top_n_emotions[0].top_n_surprise)
 
+                top_5_top_n_anger.append(top_n_anger)
+                top_5_top_n_disgust.append(top_n_disgust)
+                top_5_top_n_fear.append(top_n_fear)
+                top_5_top_n_joy.append(top_n_joy)
+                top_5_top_n_neutral.append(top_n_neutral)
+                top_5_top_n_sadness.append(top_n_sadness)
+                top_5_top_n_surprise.append(top_n_surprise)
+
                 top_5_videos.append(json.loads(previous_video_analysis.previous_video_analysis_json))
             else:
                 break
@@ -57,13 +72,13 @@ def youtube_analyse():
         "operation_success": True,
         "responsePayload": {
              'top_5_videos': top_5_videos,
-             'top_n_anger': top_n_anger,
-             'top_n_disgust': top_n_disgust,
-             'top_n_fear': top_n_fear,
-             'top_n_joy': top_n_joy,
-             'top_n_neutral': top_n_neutral,
-             'top_n_sadness': top_n_sadness,
-             'top_n_surprise': top_n_surprise
+             'top_5_top_n_anger': top_5_top_n_anger,
+             'top_5_top_n_disgust': top_5_top_n_disgust,
+             'top_5_top_n_fear': top_5_top_n_fear,
+             'top_5_top_n_joy': top_5_top_n_joy,
+             'top_5_top_n_neutral': top_5_top_n_neutral,
+             'top_5_top_n_sadness': top_5_top_n_sadness,
+             'top_5_top_n_surprise': top_5_top_n_surprise
         },
     }
     response = make_response(json.dumps(operation_response))

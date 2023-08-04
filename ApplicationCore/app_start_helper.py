@@ -8,6 +8,8 @@ from flask_mail import Mail, Message
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 
+import openai
+
 from apiclient.discovery import build
 
 app = Flask(__name__)
@@ -45,3 +47,7 @@ youtube_object = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
                                         developerKey = DEVELOPER_KEY)
 
 rapidapi_key = "2b15b711e0msh4c5b33d95d9470dp1d558bjsn4dc897e8f19f"
+
+openai.api_key = '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'
+
+chat_gpt_testing = False
