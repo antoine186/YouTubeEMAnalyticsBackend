@@ -25,6 +25,7 @@ def youtube_analyse():
     top_5_top_n_neutral = []
     top_5_top_n_sadness = []
     top_5_top_n_surprise = []
+    top_5_average_emo_breakdown = []
 
     if previous_channel_analysis_id[0][0] == None:
         operation_response = {
@@ -63,6 +64,15 @@ def youtube_analyse():
                 top_5_top_n_sadness.append(top_n_sadness)
                 top_5_top_n_surprise.append(top_n_surprise)
 
+                previous_video_analysis_loaded = json.loads(previous_video_analysis.previous_video_analysis_json)
+                """
+                average_emo_breakdown = {
+                    'average_emo_breakdown': previous_video_analysis_loaded
+                }
+                top_5_average_emo_breakdown.append(average_emo_breakdown)
+                """
+                top_5_average_emo_breakdown.append(previous_video_analysis_loaded)
+
                 top_5_videos.append(json.loads(previous_video_analysis.previous_video_analysis_json))
             else:
                 break
@@ -78,7 +88,8 @@ def youtube_analyse():
              'top_5_top_n_joy': top_5_top_n_joy,
              'top_5_top_n_neutral': top_5_top_n_neutral,
              'top_5_top_n_sadness': top_5_top_n_sadness,
-             'top_5_top_n_surprise': top_5_top_n_surprise
+             'top_5_top_n_surprise': top_5_top_n_surprise,
+             'top_5_average_emo_breakdown': top_5_average_emo_breakdown
         },
     }
     response = make_response(json.dumps(operation_response))
