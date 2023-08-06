@@ -31,6 +31,12 @@ def retrieve_subscription_details():
             stripe_subscription_id[0][0],
         )
 
+        if retrieved_subscription.status != 'active':
+            delete_subscription_sp = 'CALL payment_schema.delete_subscription(:internal_stripe_customer_id)'
+            db.session.execute(text(delete_subscription_sp), {'internal_stripe_customer_id': internal_stripe_customer_id[0][0]})
+
+            db.session.commit()
+
         latest_invoice = stripe.Invoice.retrieve(
             retrieved_subscription.latest_invoice,
         )
