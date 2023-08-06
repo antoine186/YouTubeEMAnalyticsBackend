@@ -276,3 +276,26 @@ VALUES
 $BODY$;
 ALTER PROCEDURE youtube_schema.seed_video_analysis(character varying, bigint)
     OWNER TO postgres;
+
+ALTER TABLE IF EXISTS user_schema."user"
+    ALTER COLUMN date_of_birth DROP NOT NULL;
+
+ALTER TABLE IF EXISTS user_schema."user"
+    ALTER COLUMN primary_email DROP NOT NULL;
+
+ALTER TABLE IF EXISTS user_schema."user"
+    ALTER COLUMN telephone_number DROP NOT NULL;
+
+ALTER TABLE IF EXISTS user_schema."user"
+    ALTER COLUMN telephone_area_code DROP NOT NULL;
+
+CREATE PROCEDURE user_schema.add_basic_account_data_simplified(_primary_email character varying, _password character varying, _first_name character varying, _last_name character varying)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO user_schema.user (username, "password", first_name, last_name,
+	primary_email)
+VALUES (_primary_email, _password, _first_name, _last_name,
+	_primary_email)
+$BODY$;
+ALTER PROCEDURE user_schema.add_basic_account_data_simplified(character varying, character varying, character varying, character varying)
+    OWNER TO postgres;

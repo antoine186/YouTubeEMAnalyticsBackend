@@ -20,14 +20,6 @@ def stripe_customer_create():
         new_stripe_customer = stripe.Customer.create(
         email=payload['accountCreationData']['emailAddress'],
         name=payload['accountCreationData']['firstName'] + " " + payload['accountCreationData']['lastName'],
-        address={
-            "city": payload['accountCreationData']['selectedCityName'],
-            "country": payload['accountCreationData']['selectedCountryCode'],
-            "line1": payload['accountCreationData']['addressLine1'],
-            "line2": payload['accountCreationData']['addressLine2'],
-            "postal_code": payload['accountCreationData']['zipCode'],
-            "state": payload['accountCreationData']['selectedStateCode'],
-        },
         )
 
         # DB operations here
