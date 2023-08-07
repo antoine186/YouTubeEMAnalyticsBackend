@@ -16,6 +16,7 @@ from sqlalchemy import text
 from app_start_helper import db
 import json
 from Utils.json_encoder import GenericJsonEncoder
+from models.top_n_emotions import TopNEmotions
 
 def emo_mine_from_list(text_list, video_title, published_date, publisher, video_link, thumbnail, previous_video_analysis_id):
     emo_breakdown_results = []
@@ -75,6 +76,8 @@ def emo_mine_from_list(text_list, video_title, published_date, publisher, video_
         sortable_emo_breakdown_results = copy.deepcopy(emo_breakdown_results)
 
         n = math.floor(len(text_list) / 4)
+
+        previous_top_n_emotions = TopNEmotions.query.filter(TopNEmotions.previous_video_analysis_id == previous_video_analysis_id).all()
 
         top_n_anger = results_sort_based_on_emo(sortable_emo_breakdown_results, 'anger_percentage', n)
         top_n_disgust = results_sort_based_on_emo(sortable_emo_breakdown_results, 'disgust_percentage', n)
