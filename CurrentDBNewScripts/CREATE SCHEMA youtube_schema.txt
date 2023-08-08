@@ -371,7 +371,7 @@ ALTER PROCEDURE youtube_schema.seed_video_analysis_simplified(character varying)
     OWNER TO postgres;
 
 CREATE FUNCTION youtube_schema.check_video_analysis_loading_status(_previous_video_analysis_id bigint)
-    RETURNS bigint
+    RETURNS character varying
     LANGUAGE 'sql'
     
 AS $BODY$
@@ -382,6 +382,7 @@ $BODY$;
 
 ALTER FUNCTION youtube_schema.check_video_analysis_loading_status(bigint)
     OWNER TO postgres;
+
 CREATE PROCEDURE youtube_schema.add_video_analysis_status(_previous_video_analysis_id bigint, _status character varying)
 LANGUAGE 'sql'
 AS $BODY$
@@ -436,6 +437,73 @@ WHERE previous_video_analysis_id = _previous_video_analysis_id
 $BODY$;
 ALTER PROCEDURE youtube_schema.update_latest_video_analysis_date(bigint, character varying)
     OWNER TO postgres;
+
+CREATE TABLE youtube_schema.user_searched_video
+(
+    user_searched_video_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    video_id character varying(50) NOT NULL,
+    PRIMARY KEY (user_searched_video_id)
+);
+
+ALTER TABLE IF EXISTS youtube_schema.user_searched_video
+    OWNER to postgres;
+
+ALTER TABLE IF EXISTS youtube_schema.user_searched_video
+    ALTER COLUMN user_searched_video_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+
+ALTER TABLE IF EXISTS youtube_schema.user_searched_video
+    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES user_schema."user" (user_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_user_id_fkey
+    ON youtube_schema.user_searched_video(user_id);
+
+CREATE FUNCTION youtube_schema.check_user_searched_video(_user_id bigint)
+    RETURNS character varying
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT video_id
+FROM youtube_schema.user_searched_video
+WHERE user_id = _user_id
+$BODY$;
+
+ALTER FUNCTION youtube_schema.check_user_searched_video(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.add_user_searched_video(_user_id bigint, _video_id character varying)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO youtube_schema.user_searched_video
+(user_id, video_id)
+VALUES
+(_user_id, _video_id)
+$BODY$;
+ALTER PROCEDURE youtube_schema.add_user_searched_video(bigint, character varying)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.update_user_searched_video(_video_id character varying, _user_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+UPDATE youtube_schema.user_searched_video
+SET video_id = _video_id
+WHERE user_id = _user_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.update_user_searched_video(character varying, bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.delete_user_searched_video(_user_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.user_searched_video
+WHERE user_id = _user_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_user_searched_video(bigint)
+    OWNER TO postgres;
+
 
 
 

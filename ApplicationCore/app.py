@@ -47,6 +47,7 @@ from youtube_channel.youtube_retrieve_channel_results_blueprint import youtube_r
 from youtube_channel.comments_chatgpt_questioning_blueprint import comments_chatgpt_questioning_blueprint
 from youtube_channel.comments_chatgpt_emo_elaboration_blueprint import comments_chatgpt_emo_elaboration_blueprint
 from youtube_channel.youtube_video_adhoc_analyse_blueprint import youtube_video_adhoc_analyse_blueprint
+from youtube_channel.youtube_retrieve_video_adhoc_results_blueprint import youtube_retrieve_video_adhoc_results_blueprint
 
 # app.register_blueprint(user_bp, url_prefix='/users')
 app.register_blueprint(main_page_blueprint)
@@ -89,6 +90,7 @@ app.register_blueprint(youtube_retrieve_channel_results_blueprint)
 app.register_blueprint(comments_chatgpt_questioning_blueprint)
 app.register_blueprint(comments_chatgpt_emo_elaboration_blueprint)
 app.register_blueprint(youtube_video_adhoc_analyse_blueprint)
+app.register_blueprint(youtube_retrieve_video_adhoc_results_blueprint)
 
 with app.app_context():
     db.init_app(app)
