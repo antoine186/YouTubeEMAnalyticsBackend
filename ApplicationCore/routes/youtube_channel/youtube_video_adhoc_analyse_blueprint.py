@@ -12,6 +12,8 @@ from app_start_helper import mail
 import requests
 from Utils.youtube_api_utils.unpack_youtube_top_level_comments_yt_api import unpack_youtube_top_level_comments_yt_api
 from Utils.emo_utils.emo_mine_from_list_adhoc import emo_mine_from_list_adhoc
+from datetime import datetime, timedelta
+import copy
 
 youtube_video_adhoc_analyse_blueprint = Blueprint('youtube_video_adhoc_analyse_blueprint', __name__)
 
@@ -107,10 +109,24 @@ def youtube_analyse():
             response = make_response(json.dumps(operation_response))
             return response
         
+        check_latest_video_analysis_date = 'SELECT youtube_schema.check_latest_video_analysis_date(:previous_video_analysis_id)'
+        latest_date = db.session.execute(text(check_latest_video_analysis_date), 
+                                                            {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+        
+        if latest_date[0][0] != None:
+            latest_date = datetime.strptime(latest_date[0][0], '%Y-%m-%d').date()
+            latest_date = latest_date - timedelta(days=1)
+        else:
+            latest_date = '1990-01-01'
+            latest_date = datetime.strptime(latest_date, '%Y-%m-%d').date()
+
+        latest_date_stable = copy.deepcopy(latest_date)
+        
         continue_comment_acquisition = True
         raw_top_level_comments = []
 
-        raw_top_level_comments, continue_comment_acquisition = unpack_youtube_top_level_comments_yt_api(content_json['data'], raw_top_level_comments, previous_video_analysis_id[0][0], continue_comment_acquisition)
+        raw_top_level_comments, continue_comment_acquisition, latest_date = unpack_youtube_top_level_comments_yt_api(content_json['data'], 
+                                                                                                                     raw_top_level_comments, continue_comment_acquisition, latest_date, latest_date_stable)
 
         while 'continuation' in content_json.keys() and content_json['continuation'] != '':
             print('Getting to the next pageToken for ' + video_title)
@@ -122,18 +138,20 @@ def youtube_analyse():
             content_json = json.loads(content_raw)
             
             if continue_comment_acquisition == True:
-                raw_top_level_comments, continue_comment_acquisition = unpack_youtube_top_level_comments_yt_api(content_json['data'], raw_top_level_comments, previous_video_analysis_id[0][0], continue_comment_acquisition)
+                raw_top_level_comments, continue_comment_acquisition, latest_date = unpack_youtube_top_level_comments_yt_api(content_json['data'], 
+                                                                                                                             raw_top_level_comments, continue_comment_acquisition, latest_date, latest_date_stable)
             else:
                 break
+
+        add_latest_video_analysis_date_sp = 'CALL youtube_schema.add_latest_video_analysis_date(:previous_video_analysis_id,:latest_date)'
+        db.session.execute(text(add_latest_video_analysis_date_sp), 
+                                {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'latest_date': latest_date.strftime('%Y-%m-%d')})
+        db.session.commit()
 
         emo_breakdown_result_metadata, emo_breakdown_results = emo_mine_from_list_adhoc(raw_top_level_comments, video_title, published_date,
                                                                publisher, video_link, thumbnail, previous_video_analysis_id[0][0], payload['youtubeVideoInput'])
                                                                
         print('Saving video for ' + video_title)
-
-        check_previous_video_analysis_simplified = 'SELECT youtube_schema.check_previous_video_analysis_simplified(:_video_id)'
-        previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis_simplified), 
-                                                            {'_video_id': payload['youtubeVideoInput']}).fetchall()
             
         emo_breakdown_result_metadata_json_data = json.dumps(emo_breakdown_result_metadata, indent=4, cls=GenericJsonEncoder)
 
@@ -142,20 +160,8 @@ def youtube_analyse():
                                 {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'previous_video_analysis_json': emo_breakdown_result_metadata_json_data})
         db.session.commit()
 
-        #raw_comments_grab_append(playlist_content, user_id, previous_channel_analysis_id)
-
-        """
-        while 'nextPageToken' in playlist_content.keys() and playlist_content['nextPageToken'] != '':
-                playlist_content = youtube_object.playlistItems().list(
-                    playlistId = main_uploads_id,
-                    part = 'snippet,contentDetails,id',
-                    pageToken = playlist_content['nextPageToken']
-                ).execute()
-
-                raw_comments_grab_append(playlist_content, user_id, previous_channel_analysis_id)
-
-        print('YouTube channel analysis done!')
-        """
+        for emo_breakdown_result in emo_breakdown_results:
+            save_comment_emo(previous_video_analysis_id[0][0], emo_breakdown_result)
 
         operation_response = {
             "operation_success": True,
@@ -184,3 +190,10 @@ def youtube_analyse():
         Thread(target=mail.send(msg)).start()
 
         return response
+
+def save_comment_emo(previous_video_analysis_id, comment_emo):
+    add_comment_emo_sp = 'CALL youtube_schema.add_comment_emo(:previous_video_analysis_id,:comment_emo)'
+    db.session.execute(text(add_comment_emo_sp), {'previous_video_analysis_id': previous_video_analysis_id, 
+                                                  'comment_emo': json.dumps(comment_emo, indent=4, cls=GenericJsonEncoder)})
+    db.session.commit()
+    
