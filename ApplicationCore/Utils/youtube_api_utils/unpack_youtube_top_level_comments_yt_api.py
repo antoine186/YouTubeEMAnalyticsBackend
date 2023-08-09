@@ -13,10 +13,14 @@ def unpack_youtube_top_level_comments_yt_api(video_response_items, raw_comments_
 
             current_item_date = datetime.strptime(item['publishDate'], '%Y-%m-%d').date()
 
+            print(current_item_date)
+
+            """
             if current_item_date.year != 1969:
                 if current_item_date < latest_date_stable:
                     continue_comment_acquisition = False
                     break
+            """
 
             if current_item_date > latest_date_evolvable:
                 latest_date_evolvable = current_item_date
@@ -26,12 +30,7 @@ def unpack_youtube_top_level_comments_yt_api(video_response_items, raw_comments_
         return raw_comments_list, continue_comment_acquisition, latest_date_evolvable
     
     except Exception as e:
-        operation_response = {
-            "operation_success": False,
-            "responsePayload": {
-            },
-            "error_message": ""
-        }
-        response = make_response(json.dumps(operation_response))
+        print(e)
 
-        return response
+        raise Exception(e)
+    

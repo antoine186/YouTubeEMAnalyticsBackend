@@ -346,6 +346,18 @@ ALTER TABLE IF EXISTS youtube_schema.video_analysis_loading_status
 CREATE INDEX IF NOT EXISTS fki_v
     ON youtube_schema.video_analysis_loading_status(previous_video_analysis_id);
 
+ALTER TABLE IF EXISTS youtube_schema.video_analysis_loading_status
+    ADD COLUMN user_id bigint NOT NULL;
+
+ALTER TABLE IF EXISTS youtube_schema.video_analysis_loading_status
+    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES user_schema."user" (user_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_user_id_fkey
+    ON youtube_schema.video_analysis_loading_status(user_id);
+
 CREATE FUNCTION youtube_schema.check_previous_video_analysis_simplified(_video_id character varying)
     RETURNS bigint
     LANGUAGE 'sql'
@@ -383,25 +395,38 @@ $BODY$;
 ALTER FUNCTION youtube_schema.check_video_analysis_loading_status(bigint)
     OWNER TO postgres;
 
-CREATE PROCEDURE youtube_schema.add_video_analysis_status(_previous_video_analysis_id bigint, _status character varying)
+CREATE FUNCTION youtube_schema.check_video_analysis_loading_status_initiator(_previous_video_analysis_id bigint)
+    RETURNS bigint
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT user_id 
+FROM youtube_schema.video_analysis_loading_status
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+
+ALTER FUNCTION youtube_schema.check_video_analysis_loading_status_initiator(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.add_video_analysis_status(_previous_video_analysis_id bigint, _status character varying, _user_id bigint)
 LANGUAGE 'sql'
 AS $BODY$
 INSERT INTO youtube_schema.video_analysis_loading_status
-(previous_video_analysis_id, status)
+(previous_video_analysis_id, status, user_id)
 VALUES
-(_previous_video_analysis_id, _status)
+(_previous_video_analysis_id, _status, _user_id)
 $BODY$;
-ALTER PROCEDURE youtube_schema.add_video_analysis_status(bigint, character varying)
+ALTER PROCEDURE youtube_schema.add_video_analysis_status(bigint, character varying, bigint)
     OWNER TO postgres;
 
-CREATE PROCEDURE youtube_schema.update_video_analysis_status(_previous_video_analysis_id bigint, _status character varying)
+CREATE PROCEDURE youtube_schema.update_video_analysis_status(_previous_video_analysis_id bigint, _status character varying, _user_id bigint)
 LANGUAGE 'sql'
 AS $BODY$
 UPDATE youtube_schema.video_analysis_loading_status
-SET status = _status
+SET status = _status, user_id = _user_id
 WHERE previous_video_analysis_id = _previous_video_analysis_id
 $BODY$;
-ALTER PROCEDURE youtube_schema.update_video_analysis_status(bigint, character varying)
+ALTER PROCEDURE youtube_schema.update_video_analysis_status(bigint, character varying, bigint)
     OWNER TO postgres;
 
 CREATE FUNCTION youtube_schema.check_latest_video_analysis_date(_previous_video_analysis_id bigint)
@@ -504,6 +529,15 @@ $BODY$;
 ALTER PROCEDURE youtube_schema.delete_user_searched_video(bigint)
     OWNER TO postgres;
 
+CREATE FUNCTION youtube_schema.get_video_analysis_loading_status(_previous_video_analysis_id bigint)
+    RETURNS character varying
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT status 
+FROM youtube_schema.video_analysis_loading_status
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
 
-
-
+ALTER FUNCTION youtube_schema.get_video_analysis_loading_status(bigint)
+    OWNER TO postgres;

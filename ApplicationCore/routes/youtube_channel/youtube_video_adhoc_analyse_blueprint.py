@@ -12,7 +12,7 @@ from app_start_helper import mail
 import requests
 from Utils.youtube_api_utils.unpack_youtube_top_level_comments_yt_api import unpack_youtube_top_level_comments_yt_api
 from Utils.emo_utils.emo_mine_from_list_adhoc import emo_mine_from_list_adhoc
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import copy
 
 youtube_video_adhoc_analyse_blueprint = Blueprint('youtube_video_adhoc_analyse_blueprint', __name__)
@@ -32,16 +32,97 @@ def youtube_analyse():
         check_previous_video_analysis_simplified = 'SELECT youtube_schema.check_previous_video_analysis_simplified(:video_id)'
         previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis_simplified), 
                                                             {'video_id': payload['youtubeVideoInput']}).fetchall()
-            
-        if previous_video_analysis_id[0][0] == None:
-            seed_video_analysis_simplified_sp = 'CALL youtube_schema.seed_video_analysis_simplified(:video_id)'
-            db.session.execute(text(seed_video_analysis_simplified_sp), 
-                                {'video_id': payload['youtubeVideoInput']})
-            db.session.commit()
+        
+        first_initiator = False
 
-            check_previous_video_analysis_simplified = 'SELECT youtube_schema.check_previous_video_analysis_simplified(:video_id)'
-            previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis_simplified), 
-                                                            {'video_id': payload['youtubeVideoInput']}).fetchall()
+        try:
+            if previous_video_analysis_id[0][0] == None:
+                seed_video_analysis_simplified_sp = 'CALL youtube_schema.seed_video_analysis_simplified(:video_id)'
+                db.session.execute(text(seed_video_analysis_simplified_sp), 
+                                    {'video_id': payload['youtubeVideoInput']})
+                db.session.commit()
+
+                check_previous_video_analysis_simplified = 'SELECT youtube_schema.check_previous_video_analysis_simplified(:video_id)'
+                previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis_simplified), 
+                                                                {'video_id': payload['youtubeVideoInput']}).fetchall()
+                
+                add_video_analysis_status_sp = 'CALL youtube_schema.add_video_analysis_status(:previous_video_analysis_id,:status,:user_id)'
+                loading_status = 'true'
+                db.session.execute(text(add_video_analysis_status_sp), 
+                                        {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'status': loading_status, 'user_id': user_id[0][0]})
+                db.session.commit()
+                first_initiator = True
+            else:
+                check_video_analysis_loading_status = 'SELECT youtube_schema.check_video_analysis_loading_status(:previous_video_analysis_id)'
+                video_analysis_loading_status_id = db.session.execute(text(check_video_analysis_loading_status), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+
+                if video_analysis_loading_status_id[0][0] == None:
+                    add_video_analysis_status_sp = 'CALL youtube_schema.add_video_analysis_status(:previous_video_analysis_id,:status,:user_id)'
+                    loading_status = 'true'
+                    db.session.execute(text(add_video_analysis_status_sp), 
+                                            {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'status': loading_status, 'user_id': user_id[0][0]})
+                    db.session.commit()
+                    first_initiator = True
+
+                    check_video_analysis_loading_status = 'SELECT youtube_schema.check_video_analysis_loading_status(:previous_video_analysis_id)'
+                    video_analysis_loading_status_id = db.session.execute(text(check_video_analysis_loading_status), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+
+                get_video_analysis_loading_status = 'SELECT youtube_schema.get_video_analysis_loading_status(:previous_video_analysis_id)'
+                video_analysis_loading_status = db.session.execute(text(get_video_analysis_loading_status), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+
+                if video_analysis_loading_status[0][0] != None and first_initiator == False:
+                    if video_analysis_loading_status[0][0] == 'true':
+                        operation_response = {
+                            "operation_success": False,
+                            "responsePayload": {
+                            },
+                            "error_message": ""
+                        }
+                        response = make_response(json.dumps(operation_response))
+                        return response
+                    else:
+                        check_latest_video_analysis_date = 'SELECT youtube_schema.check_latest_video_analysis_date(:previous_video_analysis_id)'
+                        latest_video_analysis_date = db.session.execute(text(check_latest_video_analysis_date), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+
+                        latest_date = datetime.strptime(latest_video_analysis_date[0][0], '%Y-%m-%d').date()
+                        today = date.today()
+                        date_last_week = today - timedelta(days=7)
+
+                        time_elapsed = today - date_last_week
+
+                        if time_elapsed.days < 7:
+                            operation_response = {
+                                "operation_success": False,
+                                "responsePayload": {
+                                },
+                                "error_message": ""
+                            }
+                            response = make_response(json.dumps(operation_response))
+                            return response
+                        else:
+                            update_video_analysis_status_sp = 'CALL youtube_schema.update_video_analysis_status(:previous_video_analysis_id,:status,:user_id)'
+                            loading_status = 'true'
+                            db.session.execute(text(update_video_analysis_status_sp), 
+                                                    {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'status': loading_status, 'user_id': user_id[0][0]})
+                            db.session.commit()
+
+                            first_initiator = True
+        except Exception as e:
+            if first_initiator:
+                update_video_analysis_status_sp = 'CALL youtube_schema.update_video_analysis_status(:previous_video_analysis_id,:status,:user_id)'
+                loading_status = 'false'
+                db.session.execute(text(update_video_analysis_status_sp), 
+                                        {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'status': loading_status, 'user_id': user_id[0][0]})
+                db.session.commit()
+
+            operation_response = {
+                "operation_success": False,
+                "responsePayload": {
+                },
+                "error_message": ""
+            }
+            response = make_response(json.dumps(operation_response))
+            return response
 
         """
         channel = youtube_object.channels().list(
@@ -74,7 +155,7 @@ def youtube_analyse():
         
         url = "https://yt-api.p.rapidapi.com/comments"
 
-        querystring = {"id":payload['youtubeVideoInput']}
+        querystring = {"id":payload['youtubeVideoInput'], "sort_by": "newest"}
 
         headers = {
             "X-RapidAPI-Key": rapidapi_key,
@@ -113,12 +194,15 @@ def youtube_analyse():
         latest_date = db.session.execute(text(check_latest_video_analysis_date), 
                                                             {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
         
+        first_latest_date = True
+        
         if latest_date[0][0] != None:
             latest_date = datetime.strptime(latest_date[0][0], '%Y-%m-%d').date()
             latest_date = latest_date - timedelta(days=1)
         else:
             latest_date = '1990-01-01'
             latest_date = datetime.strptime(latest_date, '%Y-%m-%d').date()
+            first_latest_date = False
 
         latest_date_stable = copy.deepcopy(latest_date)
         
@@ -130,7 +214,7 @@ def youtube_analyse():
 
         while 'continuation' in content_json.keys() and content_json['continuation'] != '':
             print('Getting to the next pageToken for ' + video_title)
-            querystring = {"id":payload['youtubeVideoInput'], "token":content_json['continuation']}
+            querystring = {"id":payload['youtubeVideoInput'], "token":content_json['continuation'], "sort_by": "newest"}
 
             response = requests.get(url, headers=headers, params=querystring)
 
@@ -142,11 +226,17 @@ def youtube_analyse():
                                                                                                                              raw_top_level_comments, continue_comment_acquisition, latest_date, latest_date_stable)
             else:
                 break
-
-        add_latest_video_analysis_date_sp = 'CALL youtube_schema.add_latest_video_analysis_date(:previous_video_analysis_id,:latest_date)'
-        db.session.execute(text(add_latest_video_analysis_date_sp), 
-                                {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'latest_date': latest_date.strftime('%Y-%m-%d')})
-        db.session.commit()
+        
+        if first_latest_date:
+            add_latest_video_analysis_date_sp = 'CALL youtube_schema.add_latest_video_analysis_date(:previous_video_analysis_id,:latest_date)'
+            db.session.execute(text(add_latest_video_analysis_date_sp), 
+                                    {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'latest_date': latest_date.strftime('%Y-%m-%d')})
+            db.session.commit()
+        else:
+            update_latest_video_analysis_date_sp = 'CALL youtube_schema.update_latest_video_analysis_date(:previous_video_analysis_id,:latest_date)'
+            db.session.execute(text(update_latest_video_analysis_date_sp), 
+                                    {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'latest_date': latest_date.strftime('%Y-%m-%d')})
+            db.session.commit()
 
         emo_breakdown_result_metadata, emo_breakdown_results = emo_mine_from_list_adhoc(raw_top_level_comments, video_title, published_date,
                                                                publisher, video_link, thumbnail, previous_video_analysis_id[0][0], payload['youtubeVideoInput'])
@@ -163,6 +253,13 @@ def youtube_analyse():
         for emo_breakdown_result in emo_breakdown_results:
             save_comment_emo(previous_video_analysis_id[0][0], emo_breakdown_result)
 
+        if first_initiator:
+            update_video_analysis_status_sp = 'CALL youtube_schema.update_video_analysis_status(:previous_video_analysis_id,:status,:user_id)'
+            loading_status = 'false'
+            db.session.execute(text(update_video_analysis_status_sp), 
+                                    {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'status': loading_status, 'user_id': user_id[0][0]})
+            db.session.commit()
+
         operation_response = {
             "operation_success": True,
             "responsePayload": {
@@ -173,6 +270,13 @@ def youtube_analyse():
         return response
         
     except Exception as e:
+        if first_initiator:
+            update_video_analysis_status_sp = 'CALL youtube_schema.update_video_analysis_status(:previous_video_analysis_id,:status,:user_id)'
+            loading_status = 'false'
+            db.session.execute(text(update_video_analysis_status_sp), 
+                                    {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'status': loading_status, 'user_id': user_id[0][0]})
+            db.session.commit()
+        
         operation_response = {
             "operation_success": False,
             "responsePayload": {

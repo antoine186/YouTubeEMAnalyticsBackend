@@ -130,4 +130,6 @@ def emo_mine_from_list_adhoc(text_list, video_title, published_date, publisher, 
 
         Thread(target=mail.send(msg)).start()
 
+        raise Exception(e)
+
     return emo_breakdown_result_metadata, emo_breakdown_results
