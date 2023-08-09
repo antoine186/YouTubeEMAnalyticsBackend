@@ -86,9 +86,9 @@ def youtube_analyse():
 
                         latest_date = datetime.strptime(latest_video_analysis_date[0][0], '%Y-%m-%d').date()
                         today = date.today()
-                        date_last_week = today - timedelta(days=7)
+                        #date_last_week = today - timedelta(days=7)
 
-                        time_elapsed = today - date_last_week
+                        time_elapsed = today - latest_date
 
                         if time_elapsed.days < 7:
                             operation_response = {
@@ -199,10 +199,10 @@ def youtube_analyse():
         if latest_date[0][0] != None:
             latest_date = datetime.strptime(latest_date[0][0], '%Y-%m-%d').date()
             latest_date = latest_date - timedelta(days=1)
+            first_latest_date = False
         else:
             latest_date = '1990-01-01'
             latest_date = datetime.strptime(latest_date, '%Y-%m-%d').date()
-            first_latest_date = False
 
         latest_date_stable = copy.deepcopy(latest_date)
         
@@ -248,6 +248,11 @@ def youtube_analyse():
         update_video_analysis_sp = 'CALL youtube_schema.update_video_analysis(:previous_video_analysis_id,:previous_video_analysis_json)'
         db.session.execute(text(update_video_analysis_sp), 
                                 {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'previous_video_analysis_json': emo_breakdown_result_metadata_json_data})
+        db.session.commit()
+
+        delete_emo_breakdown_comments_sp = 'CALL youtube_schema.delete_emo_breakdown_comments(:previous_video_analysis_id)'
+        db.session.execute(text(delete_emo_breakdown_comments_sp), 
+                                    {'previous_video_analysis_id': previous_video_analysis_id[0][0]})
         db.session.commit()
 
         for emo_breakdown_result in emo_breakdown_results:

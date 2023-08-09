@@ -541,3 +541,12 @@ $BODY$;
 
 ALTER FUNCTION youtube_schema.get_video_analysis_loading_status(bigint)
     OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.delete_emo_breakdown_comments(_previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.comment_emo_breakdown
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_emo_breakdown_comments(bigint)
+    OWNER TO postgres;

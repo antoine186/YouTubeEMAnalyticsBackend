@@ -13,8 +13,6 @@ def unpack_youtube_top_level_comments_yt_api(video_response_items, raw_comments_
 
             current_item_date = datetime.strptime(item['publishDate'], '%Y-%m-%d').date()
 
-            print(current_item_date)
-
             """
             if current_item_date.year != 1969:
                 if current_item_date < latest_date_stable:
