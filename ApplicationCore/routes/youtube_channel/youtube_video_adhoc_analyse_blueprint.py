@@ -212,6 +212,8 @@ def youtube_analyse():
         raw_top_level_comments, continue_comment_acquisition, latest_date = unpack_youtube_top_level_comments_yt_api(content_json['data'], 
                                                                                                                      raw_top_level_comments, continue_comment_acquisition, latest_date, latest_date_stable)
 
+        pages_already_gotten = 1
+
         while 'continuation' in content_json.keys() and content_json['continuation'] != '':
             print('Getting to the next pageToken for ' + video_title)
             querystring = {"id":payload['youtubeVideoInput'], "token":content_json['continuation'], "sort_by": "newest"}
@@ -221,11 +223,14 @@ def youtube_analyse():
             content_raw = response.content.decode("utf-8")
             content_json = json.loads(content_raw)
             
-            if continue_comment_acquisition == True:
+            if continue_comment_acquisition == True and pages_already_gotten < 50:
                 raw_top_level_comments, continue_comment_acquisition, latest_date = unpack_youtube_top_level_comments_yt_api(content_json['data'], 
                                                                                                                              raw_top_level_comments, continue_comment_acquisition, latest_date, latest_date_stable)
+                pages_already_gotten += 1
             else:
                 break
+
+        print(pages_already_gotten)
         
         if first_latest_date:
             add_latest_video_analysis_date_sp = 'CALL youtube_schema.add_latest_video_analysis_date(:previous_video_analysis_id,:latest_date)'
