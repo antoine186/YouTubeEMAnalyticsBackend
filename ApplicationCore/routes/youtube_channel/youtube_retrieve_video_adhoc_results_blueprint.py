@@ -35,12 +35,14 @@ def youtube_retrieve_video_adhoc_results():
         video_analysis_loading_status = db.session.execute(text(get_video_analysis_loading_status), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
 
         if video_analysis_loading_status[0][0] != None:
-            if video_analysis_loading_status[0][0] == 'active':
+            xyz = video_analysis_loading_status[0][0]
+            xyz2 = xyz == 'true'
+            if video_analysis_loading_status[0][0] == 'true':
                 operation_response = {
                     "operation_success": False,
                     "responsePayload": {
                     },
-                    "error_message": ""
+                    "error_message": "still_analysing"
                 }
                 response = make_response(json.dumps(operation_response))
                 return response
@@ -66,13 +68,16 @@ def youtube_retrieve_video_adhoc_results():
     get_previous_video_analysis = 'SELECT youtube_schema.get_previous_video_analysis(:previous_video_analysis_id)'
     previous_video_analysis = db.session.execute(text(get_previous_video_analysis), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
 
+    previous_video_analysis = json.loads(previous_video_analysis[0][0])
+
+    """
     if previous_video_analysis[0][0] != None:
         previous_video_analysis = json.loads(previous_video_analysis[0][0])
     else:
         get_video_analysis_loading_status = 'SELECT youtube_schema.get_video_analysis_loading_status(:previous_video_analysis_id)'
         video_analysis_loading_status = db.session.execute(text(get_video_analysis_loading_status), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
 
-        if video_analysis_loading_status == None:
+        if video_analysis_loading_status[0][0] == None:
             operation_response = {
                 "operation_success": False,
                 "responsePayload": {
@@ -90,6 +95,7 @@ def youtube_retrieve_video_adhoc_results():
             }
             response = make_response(json.dumps(operation_response))
             return response
+    """
 
     previous_top_n_emotions = TopNEmotions.query.filter(TopNEmotions.previous_video_analysis_id == previous_video_analysis_id[0][0]).all()
 
