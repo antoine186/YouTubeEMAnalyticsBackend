@@ -46,7 +46,11 @@ YOUTUBE_API_VERSION = "v3"
 youtube_object = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
                                         developerKey = DEVELOPER_KEY)
 
-rapidapi_key = "2b15b711e0msh4c5b33d95d9470dp1d558bjsn4dc897e8f19f"
+# Emotional Machines API Key
+# rapidapi_key = "2b15b711e0msh4c5b33d95d9470dp1d558bjsn4dc897e8f19f"
+
+# antoine.tian@emomachines.xyz API Key
+rapidapi_key = "ddf2e48d8emsh02dbd4229cc9355p1a54eajsn7072e5a726e3"
 
 openai.api_key = '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'
 

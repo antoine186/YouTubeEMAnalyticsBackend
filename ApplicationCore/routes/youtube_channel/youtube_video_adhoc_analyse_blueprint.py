@@ -29,6 +29,21 @@ def youtube_analyse():
 
         user_id = db.session.execute(text(get_user_id), {'username': payload['username']}).fetchall()
 
+        check_user_searched_video = 'SELECT youtube_schema.check_user_searched_video(:user_id)'
+        video_id = db.session.execute(text(check_user_searched_video), 
+                                                            {'user_id': user_id[0][0]}).fetchall()
+
+        if video_id[0][0] == None:
+            add_user_searched_video_sp = 'CALL youtube_schema.add_user_searched_video(:user_id,:video_id)'
+            db.session.execute(text(add_user_searched_video_sp), 
+                                    {'user_id': user_id[0][0], 'video_id': payload['youtubeVideoInput']})
+            db.session.commit()
+        else:
+            update_user_searched_video_sp = 'CALL youtube_schema.update_user_searched_video(:video_id,:user_id)'
+            db.session.execute(text(update_user_searched_video_sp), 
+                                    {'video_id': payload['youtubeVideoInput'], 'user_id': user_id[0][0]})
+            db.session.commit()
+
         check_previous_video_analysis_simplified = 'SELECT youtube_schema.check_previous_video_analysis_simplified(:video_id)'
         previous_video_analysis_id = db.session.execute(text(check_previous_video_analysis_simplified), 
                                                             {'video_id': payload['youtubeVideoInput']}).fetchall()
@@ -51,6 +66,7 @@ def youtube_analyse():
                 db.session.execute(text(add_video_analysis_status_sp), 
                                         {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'status': loading_status, 'user_id': user_id[0][0]})
                 db.session.commit()
+
                 first_initiator = True
             else:
                 check_video_analysis_loading_status = 'SELECT youtube_schema.check_video_analysis_loading_status(:previous_video_analysis_id)'
@@ -95,7 +111,7 @@ def youtube_analyse():
                                 "operation_success": False,
                                 "responsePayload": {
                                 },
-                                "error_message": ""
+                                "error_message": "not_enough_time_elapsed"
                             }
                             response = make_response(json.dumps(operation_response))
                             return response
@@ -229,6 +245,12 @@ def youtube_analyse():
                 pages_already_gotten += 1
             else:
                 break
+
+        today = date.today()
+        latest_comment_today_time_difference = today - latest_date
+
+        if latest_comment_today_time_difference.days >= 7:
+            latest_date = today
 
         print(pages_already_gotten)
         
