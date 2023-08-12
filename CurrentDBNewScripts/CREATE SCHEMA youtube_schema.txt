@@ -550,3 +550,12 @@ WHERE previous_video_analysis_id = _previous_video_analysis_id
 $BODY$;
 ALTER PROCEDURE youtube_schema.delete_emo_breakdown_comments(bigint)
     OWNER TO postgres;
+
+CREATE PROCEDURE user_schema.auto_delete_user_session_for_testing()
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM user_schema.user_session 
+WHERE EXTRACT(EPOCH FROM now()-"timestamp")/10 >= 2
+$BODY$;
+ALTER PROCEDURE user_schema.auto_delete_user_session_for_testing()
+    OWNER TO postgres;

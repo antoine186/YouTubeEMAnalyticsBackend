@@ -24,6 +24,10 @@ def youtube_analyse():
 
     print('YouTube video adhoc analysis started!')
 
+    # Each page represents 20 comments
+    #page_limit = 50
+    page_limit = 10
+
     try:
         get_user_id = 'SELECT user_schema.get_user_id(:username)'
 
@@ -239,7 +243,7 @@ def youtube_analyse():
             content_raw = response.content.decode("utf-8")
             content_json = json.loads(content_raw)
             
-            if continue_comment_acquisition == True and pages_already_gotten < 50:
+            if continue_comment_acquisition == True and pages_already_gotten < page_limit:
                 raw_top_level_comments, continue_comment_acquisition, latest_date = unpack_youtube_top_level_comments_yt_api(content_json['data'], 
                                                                                                                              raw_top_level_comments, continue_comment_acquisition, latest_date, latest_date_stable)
                 pages_already_gotten += 1
