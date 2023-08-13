@@ -1,5 +1,6 @@
 import os
 import psycopg2
+from app_start_helper import debug_switched_on, stripe_api_key_prod, stripe_api_key_debug, SQLALCHEMY_DATABASE_URI_DEBUG, SQLALCHEMY_DATABASE_URI_PROD
 
 SECRET_KEY = os.urandom(32)
 
@@ -9,18 +10,17 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # Enable debug mode.
 DEBUG = True
 
-stripe_api_key = 'sk_test_51MyG0LFAAs2DFWSVpgT2ghJhCoQnlrO1Y3F29CHsGJkpyaZ8Qo5b7V2hRn8cLmqj4pWmYAI0eLKGWBZubjDsn8cw00or9QmyMd'
-# stripe_api_key = 'pk_live_51MyG0LFAAs2DFWSVTtM2eTdG4mfJiRudWfsLF0ilmaQwOOZ2nufVf5SlkLxMVFV5d5WbPAfG948Jav5TedJIvSS800aqnFMq5r'
-
-# This is for prod
-# stripe_api_key = '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'
+if debug_switched_on:
+    stripe_api_key = stripe_api_key_debug
+else:
+    stripe_api_key = stripe_api_key_prod
 
 # Connect to the database
 # postgres://{user}:{password}@{hostname}:{port}/{database-name}
-SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:login123@localhost:5432/postgres'
-
-# This is for prod
-# SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Emocritical186@database-3.ccigqpo72mbx.us-east-2.rds.amazonaws.com:5432/postgres'
+if debug_switched_on:
+    SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI_DEBUG
+else:
+    SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI_PROD
 
 # Turn off the Flask-SQLAlchemy event system and warning
 SQLALCHEMY_TRACK_MODIFICATIONS = False

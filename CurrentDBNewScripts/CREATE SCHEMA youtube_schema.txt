@@ -559,3 +559,16 @@ WHERE EXTRACT(EPOCH FROM now()-"timestamp")/10 >= 2
 $BODY$;
 ALTER PROCEDURE user_schema.auto_delete_user_session_for_testing()
     OWNER TO postgres;
+
+CREATE FUNCTION user_schema.how_many_sessions_active(_user_id bigint)
+    RETURNS integer
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT COUNT(session_id)
+FROM user_schema.user_session
+WHERE user_id = _user_id
+$BODY$;
+
+ALTER FUNCTION user_schema.how_many_sessions_active(bigint)
+    OWNER TO postgres;

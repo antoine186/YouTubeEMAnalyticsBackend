@@ -1,6 +1,6 @@
 from flask import Blueprint, request, make_response
 import json
-from app_start_helper import db
+from app_start_helper import db, debug_switched_on
 from sqlalchemy import text
 from Utils.json_encoder import GenericJsonEncoder
 from app_start_helper import youtube_object, rapidapi_key
@@ -8,7 +8,7 @@ from app_start_helper import nn, model_max_characters_allowed
 from Utils.youtube_api_utils.raw_comments_grab_append import raw_comments_grab_append
 from flask_mail import Mail, Message
 from threading import Thread
-from app_start_helper import mail
+from app_start_helper import mail, number_of_comment_pages_prod, number_of_comment_pages_debug
 import requests
 from Utils.youtube_api_utils.unpack_youtube_top_level_comments_yt_api import unpack_youtube_top_level_comments_yt_api
 from Utils.emo_utils.emo_mine_from_list_adhoc import emo_mine_from_list_adhoc
@@ -25,8 +25,10 @@ def youtube_analyse():
     print('YouTube video adhoc analysis started!')
 
     # Each page represents 20 comments
-    #page_limit = 50
-    page_limit = 10
+    if debug_switched_on:
+        page_limit = number_of_comment_pages_debug
+    else:
+        page_limit = number_of_comment_pages_prod
 
     try:
         get_user_id = 'SELECT user_schema.get_user_id(:username)'
