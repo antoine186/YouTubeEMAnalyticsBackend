@@ -55,9 +55,11 @@ rapidapi_key = "ddf2e48d8emsh02dbd4229cc9355p1a54eajsn7072e5a726e3"
 openai.api_key = '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'
 
 # Switch variables below between prod and debug
-chat_gpt_testing = False
 
+# !!! THIS IS THE MASTER SWITCH !!!
 debug_switched_on = False
+
+chat_gpt_testing = False
 
 number_of_seconds_prod = 7200
 number_of_seconds_debug = 15
