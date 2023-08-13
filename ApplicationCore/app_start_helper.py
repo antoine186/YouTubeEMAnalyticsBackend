@@ -56,8 +56,9 @@ openai.api_key = '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'
 
 # Switch variables below between prod and debug
 
-# !!! THIS IS THE MASTER SWITCH !!!
-debug_switched_on = False
+# !!! THIS IS THE MASTER SWITCH !!! (THERE IS ANOTHER EXCEPTIONAL MASTER
+# SWITCH IN CONFIG.PY TO PREVENT CIRCULAR IMPORTS)
+debug_switched_on = True
 
 chat_gpt_testing = False
 
@@ -70,6 +71,3 @@ number_of_comment_pages_debug = 10
 
 stripe_api_key_prod = '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'
 stripe_api_key_debug = 'sk_test_51MyG0LFAAs2DFWSVpgT2ghJhCoQnlrO1Y3F29CHsGJkpyaZ8Qo5b7V2hRn8cLmqj4pWmYAI0eLKGWBZubjDsn8cw00or9QmyMd'
-
-SQLALCHEMY_DATABASE_URI_PROD = 'postgresql://postgres:Emocritical186@database-3.ccigqpo72mbx.us-east-2.rds.amazonaws.com:5432/postgres'
-SQLALCHEMY_DATABASE_URI_DEBUG = 'postgresql://postgres:login123@localhost:5432/postgres'

@@ -1,3 +1,6 @@
+import sys
+sys.path.append('ApplicationCore')
+
 from app_start_helper import scheduler, db, app, debug_switched_on, number_of_seconds_prod, number_of_seconds_debug
 from sqlalchemy import text
 
