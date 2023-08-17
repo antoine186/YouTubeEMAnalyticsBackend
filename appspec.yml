@@ -2,9 +2,9 @@ version: 0.0
 os: linux
 files:
  - source: /
-   destination: /home/ubuntu/NewsEmotionsExtraction
+   destination: /home/ubuntu/YouTubeEMAnalyticsBackend
 permissions:
-  - object: /home/ubuntu/NewsEmotionsExtraction
+  - object: /home/ubuntu/YouTubeEMAnalyticsBackend
     mode: 755
     pattern: "**"
     owner: ubuntu

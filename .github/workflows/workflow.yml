@@ -61,8 +61,8 @@ jobs:
         id: deploy
         run: |
           aws deploy create-deployment \
-            --application-name FlaskBackendCICD2 \
-            --deployment-group-name FlaskBackendCICDGroup2 \
+            --application-name YTBackendCICD \
+            --deployment-group-name YTBackendCICDGroup \
             --file-exists-behavior OVERWRITE \
             --deployment-config-name CodeDeployDefault.OneAtATime \
             --github-location repository=${{ github.repository }},commitId=${{ github.sha }}

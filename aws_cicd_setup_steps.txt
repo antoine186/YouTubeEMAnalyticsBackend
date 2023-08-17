@@ -1,0 +1,118 @@
+) Setup GitHub key and token in the backend repository
+
+- Go to GitHub settings and go to "Deploy Keys"
+- In EC2, generate an ssh key by running:
+	ssh-keygen -t ed25519 -C "antoine186@hotmail.com"
+	id_rsa (create key in this file)
+	cat .ssh/id_rsa.pub to grab the public key
+- Add public key to the "Deploy Keys" in the repo and tick "Allow write access"
+
+- Go to GitHub profile
+- Go to settings, then developer settings
+- Go to Personal access tokens, Tokens (classic), and then "Generate new token"
+- Set expiration to "90 days"
+- Tick the option "workflow" (this should also auto-tick all options under "repo")
+- Copy the access token and store it in the backend codebase
+- In EC2, to pull the repo, run:
+	git clone https://<access token>@github.com/<username>/<repo_name>.git
+otherwise
+	git clone https://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@github.com/antoine186/YouTubeEMAnalyticsBackend.git
+
+asd
+
+) Create .yml files in the backend codebase
+
+- Create an appspec.yml file in the backend codebase's root directory (copy-paste from existing example in other repo)
+- Create .github directory in the root directory, and in there create a workflows
+directory
+- In the workflows directory, create a workflow.yml file (copy-paste from existing example in other repo)
+- Create dependency installer "installing_dependencies.sh" in the root directory (copy-paste from existing example in other repo)
+- Create server starter (runs after dependency installer) script "start_server.sh"
+in the root directory (copy-paste from existing example in other repo)
+
+) Create AWS IAM role
+
+- Create User Group
+- Add in "Permissions" tab: AWSCodeDeployDeployerAccess
+- Add in "Access Advisor": AWS CodeDeploy
+- Create an IAM User and attach it to the new user group
+
+- Create a role, select "AWS service", then select EC2.
+- In permissions, add:
+	AmazonS3ReadOnlyAccess
+	AWSCodeDeployRole
+	AmazonEC2RoleforAWSCodeDeploy
+	AWSCodeDeployFullAccess
+
+- In "Trust relationships", add:
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": [
+                    "codedeploy.us-east-2.amazonaws.com",
+                    "codedeploy.amazonaws.com",
+                    "ec2.amazonaws.com"
+                ]
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+
+- Name role "EC2DeployRole2"
+
+) Attach IAM role to backend EC2 instance
+
+Add IAM role to the instance in the "Security" tab.
+
+) Install CodeDeploy agent on EC2 instance and start it
+
+sudo apt update 
+sudo apt install -y ruby
+sudo apt install wget
+wget https://bucket-name.s3.region-identifier.amazonaws.com/latest/install
+otherwise
+wget https://aws-codedeploy-us-east-2.s3.us-east-2.amazonaws.com/latest/install
+chmod +x ./install
+sudo ./install auto
+sudo service codedeploy-agent start
+
+) Create CodeDeploy service
+
+- Go to CodeDeploy in AWS
+- Go to applications
+- Create application
+- Select "EC2/On-premises"
+
+- In "Deployment groups" tab, click "Create deployment group"
+- Select "In-place" deployment
+- Select "Amazon EC2 instances"
+- In key-value pair under "Environment configuration", add "Name" and <Name of backend code EC2 instance>
+- Set "Install AWS CodeDeploy Agent" to never
+- Set "Deployment configuration" to "OneAtATime"
+- Disable "load balancing"
+- Go to advanced and in "Rollbacks", tick "Roll back when a deployment fails"
+
+) Setup AWS access key id
+
+- Go to AWS Users, select previously created user, go to "Security credentials" tab
+- Click "Create access key"
+- Go to GitHub, go to settings, and then go to "Secrets and variables"
+- Go to Actions and then click "New repository secret"
+- Set name to "AWS_ACCESS_KEY_ID" and value to access key ID
+- Go to Actions and then click "New repository secret"
+- Set name to "AWS_SECRET_ACCESS_KEY" and value to secret access key
+
+
+
+
+
+
+
+
+
+
