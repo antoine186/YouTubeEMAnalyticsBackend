@@ -11,7 +11,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 DEBUG = True
 
 # !!! THIS IS THE MASTER SWITCH !!!
-debug_switched_on = True
+debug_switched_on = False
 
 if debug_switched_on:
     stripe_api_key = 'sk_test_51MyG0LFAAs2DFWSVpgT2ghJhCoQnlrO1Y3F29CHsGJkpyaZ8Qo5b7V2hRn8cLmqj4pWmYAI0eLKGWBZubjDsn8cw00or9QmyMd'
