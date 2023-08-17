@@ -63,7 +63,7 @@ debug_switched_on = True
 chat_gpt_testing = False
 
 number_of_seconds_prod = 7200
-number_of_seconds_debug = 15
+number_of_seconds_debug = 60
 
 # Each page represents 20 comments
 number_of_comment_pages_prod = 50

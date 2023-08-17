@@ -4,7 +4,7 @@ After=network.target
 [Service]
 User=ubuntu
 Group=www-data
-WorkingDirectory=/home/ubuntu/NewsEmotionsExtraction
+WorkingDirectory=/home/ubuntu/YouTubeEMAnalyticsBackend
 ExecStart=gunicorn --workers 3 --timeout 600 --bind 0.0.0.0:5000 ApplicationCore.app:app
 [Install]
 WantedBy=multi-user.target

@@ -1,0 +1,64 @@
+1) Extract python packages to install
+
+pip freeze > requirements.txt
+
+2) Get backend code into EC2 instance
+
+- Create new instance for backend with own security group
+- Upload compressed zip file
+- sudo apt-get install unzip
+- unzip YouTubeEMAnalyticsBackend.zip -d ExtractedShellFolder
+- rm YouTubeEMAnalyticsBackend.zip
+
+3) Install relevant packages
+
+- sudo apt-get update
+- sudo apt install python3-pip
+- Use FileZilla to move extracted file outside of shell folder
+- Delete shell folder
+- cd YouTubeEMAnalyticsBackend
+- pip3 install gunicorn
+- pip3 install -r requirements.txt
+- You will likely encounter install issues + Fix those + Change requirements.txt file
+using nano requirements.txt + CTRL+X + SHIFT+Y to save.
+Potential solutions include
+	- Remove Scweet entry
+	- python3 -m pip install --upgrade pip
+	- Remove psycopg2 from requirements.txt (You could skip this step)
+	- sudo apt install libpq-dev
+	- pip3 install psycopg2 (You could skip this step)
+	- Remove save-thread-result from requirements.txt
+	- pip3 install -U save-thread-result
+	- Remove yt-videos-list from requirements.txt
+
+4) Setup NGINX
+
+sudo apt install nginx
+
+Perform COMMAND 1 in LocationOfSettings.txt. Then copy-paste in text found in
+NGINX_settings_text.txt.
+
+5) Setup Gunicorn 
+
+Perform COMMAND 2 in LocationOfSettings.txt. Then copy-paste in text found in
+FLASKAPP_settings_text.txt.
+
+6) Set up elastic IP in AWS
+
+Allocate Elastic IP to AWS EC2 backend instance.
+
+7) Set correct urls in the custom domain manager
+
+Set Elastic IP Allocated IPv4 to the custom domain entries.
+
+8) Create and activate certificates
+
+- sudo apt install certbot python3-certbot-nginx
+- sudo certbot --nginx
+- Enter both domains to encrypt: 1) www.domain.xyz & 2) domain.xyz
+
+9) Restrict security group inbound and outbound rules
+
+[Only possible after setting up the other frontend and DB instances]
+
+10) Run prod version of backend
