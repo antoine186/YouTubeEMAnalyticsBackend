@@ -67,7 +67,8 @@ in the root directory (copy-paste from existing example in other repo)
 
 ) Attach IAM role to backend EC2 instance
 
-Add IAM role to the instance in the "Security" tab.
+- Add IAM role to the instance in the "Security" tab.
+- Reboot instance
 
 ) Install CodeDeploy agent on EC2 instance and start it
 
@@ -107,6 +108,19 @@ sudo service codedeploy-agent start
 - Go to Actions and then click "New repository secret"
 - Set name to "AWS_SECRET_ACCESS_KEY" and value to secret access key
 
+) Test CI/CD, if it fails, try running some of the below:
+
+- sudo service codedeploy-agent status
+- tail -f /var/log/aws/codedeploy-agent/codedeploy-agent.log
+
+- In CodeDeploy, go to applications, then deployment groups
+- Click create deployment
+- Select "My application is stored in GitHub"
+- Set GitHub token name (doesn't really matter)
+- Set repository name
+- Set commit id
+- Set "Overwrite the content"
+- Set "Roll back when a deployment fails"
 
 
 
