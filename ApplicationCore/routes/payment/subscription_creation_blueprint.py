@@ -18,6 +18,7 @@ def subscription_create():
 
     customer_id = payload['stripeCustomerId']
     price_id = payload['priceId']
+    user_session_validated = payload['userSessionValidated']
 
     try:
         '''
@@ -34,25 +35,51 @@ def subscription_create():
         # Create the subscription. Note we're expanding the Subscription's
         # latest invoice and that invoice's payment_intent
         # so we can pass it to the front end to confirm the payment
-        subscription = stripe.Subscription.create(
-            customer=customer_id,
-            items=[{
-                'price': price_id,
-            }],
-            currency='usd',
-            payment_behavior='default_incomplete',
-            payment_settings={'save_default_payment_method': 'on_subscription'},
-            expand=['latest_invoice.payment_intent'],
-        )
+        if user_session_validated:
+            subscription = stripe.Subscription.create(
+                customer=customer_id,
+                items=[{
+                    'price': price_id,
+                }],
+                currency='usd',
+                payment_behavior='default_incomplete',
+                payment_settings={'save_default_payment_method': 'on_subscription'},
+                expand=['latest_invoice.payment_intent'],
+            )
+            print('Create sub without free trial')
+        else:
+            subscription = stripe.Subscription.create(
+                customer=customer_id,
+                items=[{
+                    'price': price_id,
+                }],
+                currency='usd',
+                payment_behavior='default_incomplete',
+                payment_settings={'save_default_payment_method': 'on_subscription'},
+                expand=['pending_setup_intent'],
+                trial_period_days=7
+            )
+            print('Create sub with free trial')
 
-        operation_response = {
-            "operation_success": True,
-            "responsePayload": {
-                "stripe_subscription_id": subscription.id,
-                "client_secret": subscription.latest_invoice.payment_intent.client_secret
-            },
-            "error_message": "" 
-        }
+        if user_session_validated:
+            operation_response = {
+                "operation_success": True,
+                "responsePayload": {
+                    "stripe_subscription_id": subscription.id,
+                    "client_secret": subscription.latest_invoice.payment_intent.client_secret
+                },
+                "error_message": "" 
+            }
+        else:
+            operation_response = {
+                "operation_success": True,
+                "responsePayload": {
+                    "stripe_subscription_id": subscription.id,
+                    "client_secret": subscription.pending_setup_intent.client_secret
+                },
+                "error_message": "" 
+            }
+
         response = make_response(json.dumps(operation_response))
         return response
 
