@@ -1,0 +1,9 @@
+
+- Open git bash in the directory containing the .pem file
+- chmod 400 YTBackendKeyStableReuse.pem
+
+- In the backend EC2 instance's security group, make sure that a TCP SSH inbound
+connection to port 22 is allowed from your specific ip address
+- Make sure that the outbound connection allows all traffic to any source
+
+- ssh -i YTBackendKeyStableReuse.pem ubuntu@<public ip address>

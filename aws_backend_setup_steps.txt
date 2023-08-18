@@ -2,7 +2,7 @@
 
 pip freeze > requirements.txt
 
-2) Get backend code into EC2 instance
+2) Get backend code into EC2 instance (THIS STEP COULD BE SKIPPED)
 
 - Create new instance for backend with own security group
 - Upload compressed zip file
@@ -14,13 +14,13 @@ pip freeze > requirements.txt
 
 - sudo apt-get update
 - sudo apt install python3-pip
-- Use FileZilla to move extracted file outside of shell folder
-- Delete shell folder
-- cd YouTubeEMAnalyticsBackend
-- pip3 install gunicorn
-- pip3 install -r requirements.txt
+- Use FileZilla to move extracted file outside of shell folder (COULD BE SKIPPABLE)
+- Delete shell folder (COULD BE SKIPPABLE)
+- cd YouTubeEMAnalyticsBackend (COULD BE SKIPPABLE)
+- pip3 install gunicorn (COULD BE SKIPPABLE)
+- pip3 install -r requirements.txt (COULD BE SKIPPABLE)
 - You will likely encounter install issues + Fix those + Change requirements.txt file
-using nano requirements.txt + CTRL+X + SHIFT+Y to save.
+using nano requirements.txt + CTRL+X + SHIFT+Y to save. (COULD BE SKIPPABLE)
 Potential solutions include
 	- Remove Scweet entry
 	- python3 -m pip install --upgrade pip
@@ -54,11 +54,16 @@ Set Elastic IP Allocated IPv4 to the custom domain entries.
 8) Create and activate certificates
 
 - sudo apt install certbot python3-certbot-nginx
-- sudo certbot --nginx
+- sudo certbot --nginx (Make sure port 80 is temporarily open for inbound)
 - Enter both domains to encrypt: 1) www.domain.xyz & 2) domain.xyz
 
 9) Restrict security group inbound and outbound rules
 
-[Only possible after setting up the other frontend and DB instances]
+- For inbound authorised connections:
+	- Allow from frontend security group
+	- Allow from SSH over TCP on port 22
+- For outbound authorised connections:
+	- Allow to frontend security group
+	- Allow to DB security group
 
 10) Run prod version of backend
