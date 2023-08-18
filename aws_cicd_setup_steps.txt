@@ -13,7 +13,7 @@
 - Set expiration to "90 days"
 - Tick the option "workflow" (this should also auto-tick all options under "repo")
 - Copy the access token and store it in the backend codebase
-- In EC2, to pull the repo, run:
+- In EC2, to pull the repo, run: (SKIPPABLE STEP)
 	git clone https://<access token>@github.com/<username>/<repo_name>.git
 otherwise
 	git clone https://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@github.com/antoine186/YouTubeEMAnalyticsBackend.git
