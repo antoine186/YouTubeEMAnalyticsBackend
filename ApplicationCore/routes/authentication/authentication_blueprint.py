@@ -5,12 +5,10 @@ from app_start_helper import db, debug_switched_on, number_of_seconds_prod, numb
 from Utils.create_secret_token import create_secret_token
 import json
 from datetime import datetime
-from flask_cors import cross_origin
 
 authentication_blueprint = Blueprint('authentication_blueprint', __name__)
 
 @authentication_blueprint.route('/api/auth-login', methods=['POST'])
-@cross_origin(supports_credentials=True)
 def login():
     payload = request.data
     payload = json.loads(payload)
