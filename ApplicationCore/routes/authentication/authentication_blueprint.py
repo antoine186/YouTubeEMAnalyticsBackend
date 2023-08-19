@@ -59,7 +59,7 @@ def login():
             response.set_cookie('user_session_cookie', json.dumps(session_token), max_age = seconds, samesite = None , secure = False, httponly = False)
             #response.set_cookie('user_session_cookie', json.dumps(session_token), samesite = None , secure = False, httponly = False)
             # response.headers['Access-Control-Allow-Origin'] = 'http://localhost/'
-            response.headers['Access-Control-Allow-Origin'] = '*'
+            # response.headers['Access-Control-Allow-Origin'] = '*'
             # response.headers['Access-Control-Allow-Credentials'] = 'true'
 
         else:
@@ -71,7 +71,6 @@ def login():
             }
             response = make_response(json.dumps(operation_response))
         
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
 
     operation_response = {
@@ -82,5 +81,4 @@ def login():
     }
     response = make_response(json.dumps(operation_response))
 
-    response.headers['Access-Control-Allow-Origin'] = '*'
     return response
