@@ -62,8 +62,10 @@ Set Elastic IP Allocated IPv4 to the custom domain entries.
 - For inbound authorised connections:
 	- Allow from frontend security group
 	- Allow from SSH over TCP on port 22
+	- Allow All Traffic from 0.0.0.0/0 [FIGURE OUT BETTER WAY]
 - For outbound authorised connections:
 	- Allow to frontend security group
 	- Allow to DB security group
+	- Allow All Traffic from 0.0.0.0/0 [FIGURE OUT BETTER WAY]
 
 10) Run prod version of backend

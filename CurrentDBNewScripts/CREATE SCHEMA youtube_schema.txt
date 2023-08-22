@@ -1,574 +1,127 @@
-CREATE SCHEMA youtube_schema
-    AUTHORIZATION postgres;
+CREATE SCHEMA logging_schema;
 
-CREATE TABLE youtube_schema.previous_channel_analysis
-(
-    previous_channel_analysis_id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    PRIMARY KEY (previous_channel_analysis_id)
+
+ALTER SCHEMA logging_schema OWNER TO postgres;
+
+CREATE TABLE logging_schema.login_log_table (
+    login_log_table_id bigint NOT NULL,
+    logging_message character varying(50) NOT NULL,
+    "timestamp" timestamp with time zone NOT NULL,
+    user_id bigint NOT NULL
 );
 
-ALTER TABLE IF EXISTS youtube_schema.previous_channel_analysis
-    OWNER to postgres;
 
-ALTER TABLE IF EXISTS youtube_schema.previous_channel_analysis
-    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
-    REFERENCES user_schema."user" (user_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_user_id_fkey
-    ON youtube_schema.previous_channel_analysis(user_id);
+ALTER TABLE logging_schema.login_log_table OWNER TO postgres;
 
-ALTER TABLE IF EXISTS youtube_schema.previous_channel_analysis
-    ADD COLUMN channel_id character varying(50) NOT NULL;
+--
+-- TOC entry 265 (class 1259 OID 18163)
+-- Name: logging_log_table_logging_log_table_id_seq; Type: SEQUENCE; Schema: logging_schema; Owner: postgres
+--
 
-ALTER TABLE IF EXISTS youtube_schema.previous_channel_analysis
-    ALTER COLUMN previous_channel_analysis_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-CREATE TABLE youtube_schema.previous_video_analysis
-(
-    previous_video_analysis_id bigint NOT NULL,
-    video_id character varying NOT NULL,
-    previous_channel_analysis_id bigint NOT NULL,
-    previous_video_analysis_json character varying(10000000) NOT NULL,
-    PRIMARY KEY (previous_video_analysis_id)
+ALTER TABLE logging_schema.login_log_table ALTER COLUMN login_log_table_id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME logging_schema.logging_log_table_logging_log_table_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
-ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis
-    OWNER to postgres;
 
-ALTER TABLE youtube_schema.previous_video_analysis
-    ALTER COLUMN previous_video_analysis_json TYPE text COLLATE pg_catalog."default";
+--
+-- TOC entry 3368 (class 2606 OID 18161)
+-- Name: login_log_table login_log_table_pkey; Type: CONSTRAINT; Schema: logging_schema; Owner: postgres
+--
 
-CREATE FUNCTION youtube_schema.check_previous_channel_analysis(_user_id bigint, _channel_id character varying)
-    RETURNS bigint
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT previous_channel_analysis_id
-FROM youtube_schema.previous_channel_analysis
-WHERE user_id = _user_id
-AND channel_id = _channel_id
-$BODY$;
+ALTER TABLE ONLY logging_schema.login_log_table
+    ADD CONSTRAINT login_log_table_pkey PRIMARY KEY (login_log_table_id);
 
-ALTER FUNCTION youtube_schema.check_previous_channel_analysis(bigint, character varying)
-    OWNER TO postgres;
 
-CREATE FUNCTION youtube_schema.check_previous_video_analysis(_previous_channel_analysis_id bigint, _video_id character varying)
-    RETURNS bigint
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT previous_video_analysis_id
-FROM youtube_schema.previous_video_analysis
-WHERE video_id = _video_id
-AND previous_channel_analysis_id = _previous_channel_analysis_id
-$BODY$;
+--
+-- TOC entry 3366 (class 1259 OID 18169)
+-- Name: fki_user_id_fkey; Type: INDEX; Schema: logging_schema; Owner: postgres
+--
 
-ALTER FUNCTION youtube_schema.check_previous_video_analysis(bigint, character varying)
-    OWNER TO postgres;
+CREATE INDEX fki_user_id_fkey ON logging_schema.login_log_table USING btree (user_id);
 
-ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis
-    ALTER COLUMN previous_video_analysis_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
 
-ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis
-    ADD CONSTRAINT previous_channel_analysis_id_fkey FOREIGN KEY (previous_channel_analysis_id)
-    REFERENCES youtube_schema.previous_channel_analysis (previous_channel_analysis_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_u
-    ON youtube_schema.previous_video_analysis(previous_channel_analysis_id);
+--
+-- TOC entry 3369 (class 2606 OID 18164)
+-- Name: login_log_table user_id_fkey; Type: FK CONSTRAINT; Schema: logging_schema; Owner: postgres
+--
 
-CREATE PROCEDURE youtube_schema.delete_video_analysis(_previous_channel_analysis_id bigint, _video_id character varying)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.previous_video_analysis
-WHERE 
-previous_channel_analysis_id = _previous_channel_analysis_id
-AND
-video_id = _video_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_video_analysis(bigint, character varying)
-    OWNER TO postgres;
+ALTER TABLE ONLY logging_schema.login_log_table
+    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id) REFERENCES user_schema."user"(user_id) NOT VALID;
 
-CREATE PROCEDURE youtube_schema.delete_channel_analysis(_user_id bigint, _channel_id character varying)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.previous_channel_analysis
-WHERE 
-user_id = _user_id
-AND
-channel_id = _channel_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_channel_analysis(bigint, character varying)
-    OWNER TO postgres;
 
-CREATE PROCEDURE youtube_schema.update_video_analysis(_previous_video_analysis_id bigint, _previous_video_analysis_json text)
-LANGUAGE 'sql'
-AS $BODY$
-UPDATE youtube_schema.previous_video_analysis
-SET previous_video_analysis_json = _previous_video_analysis_json
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.update_video_analysis(bigint, text)
-    OWNER TO postgres;
+-- Completed on 2023-08-22 15:35:15
 
-CREATE PROCEDURE youtube_schema.add_channel_analysis(_user_id bigint, _channel_id character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.previous_channel_analysis 
-(user_id, channel_id)
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- TOC entry 368 (class 1255 OID 18170)
+-- Name: add_latest_login_log_entry(character varying, timestamp with time zone, bigint); Type: PROCEDURE; Schema: logging_schema; Owner: postgres
+--
+
+CREATE PROCEDURE logging_schema.add_latest_login_log_entry(IN _logging_message character varying, IN _timestamp timestamp with time zone, IN _user_id bigint)
+    LANGUAGE sql
+    AS $$INSERT INTO logging_schema.login_log_table 
+(logging_message, "timestamp", user_id)
 VALUES 
-(_user_id, _channel_id)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_channel_analysis(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.add_video_analysis(_video_id character varying, _previous_channel_analysis_id bigint, _previous_video_analysis_json character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.previous_video_analysis 
-(video_id, previous_channel_analysis_id, previous_video_analysis_json)
-VALUES 
-(_video_id, _previous_channel_analysis_id, _previous_video_analysis_json)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_video_analysis(character varying, bigint, character varying)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.get_previous_video_analysis(_previous_video_analysis_id bigint)
-    RETURNS text
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT previous_video_analysis_json
-FROM youtube_schema.previous_video_analysis
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.get_previous_video_analysis(bigint)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.get_all_channel_videos(_previous_channel_analysis_id bigint)
-    RETURNS character varying
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT video_id
-FROM youtube_schema.previous_video_analysis
-WHERE previous_channel_analysis_id = _previous_channel_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.get_all_channel_videos(bigint)
-    OWNER TO postgres;
-
-ALTER FUNCTION youtube_schema.get_all_channel_videos(bigint)
-    RENAME TO get_all_channel_video_ids;
-
-ALTER TABLE youtube_schema.previous_video_analysis
-    ALTER COLUMN video_id TYPE character varying(50) COLLATE pg_catalog."default";
-
-CREATE PROCEDURE youtube_schema.delete_video_analysis(_previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.previous_video_analysis
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_video_analysis(bigint)
-    OWNER TO postgres;
-
-CREATE TABLE youtube_schema.comment_emo_breakdown
-(
-    comment_emo_id bigint NOT NULL,
-    previous_video_analysis_id bigint NOT NULL,
-    comment_emo text NOT NULL,
-    PRIMARY KEY (comment_emo_id)
-);
-
-ALTER TABLE IF EXISTS youtube_schema.comment_emo_breakdown
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.comment_emo_breakdown
-    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
-    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
-    ON youtube_schema.comment_emo_breakdown(previous_video_analysis_id);
-
-ALTER TABLE IF EXISTS youtube_schema.comment_emo_breakdown
-    ALTER COLUMN comment_emo_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-CREATE PROCEDURE youtube_schema.add_comment_emo(_previous_video_analysis_id bigint, _comment_emo text)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.comment_emo_breakdown
-(previous_video_analysis_id, comment_emo)
-VALUES
-(_previous_video_analysis_id, _comment_emo)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_comment_emo(bigint, text)
-    OWNER TO postgres;
-
-CREATE TABLE youtube_schema.top_n_emotions
-(
-    top_n_emotions_id bigint NOT NULL,
-    previous_video_analysis_id bigint NOT NULL,
-    top_n_anger text,
-    top_n_disgust text,
-    top_n_fear text,
-    top_n_joy text,
-    top_n_neutral text,
-    top_n_sadness text,
-    top_n_surprise text,
-    PRIMARY KEY (top_n_emotions_id)
-);
-
-ALTER TABLE IF EXISTS youtube_schema.top_n_emotions
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.top_n_emotions
-    ALTER COLUMN top_n_emotions_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-ALTER TABLE IF EXISTS youtube_schema.top_n_emotions
-    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
-    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
-    ON youtube_schema.top_n_emotions(previous_video_analysis_id);
-
-CREATE PROCEDURE youtube_schema.delete_top_n_emotions(_previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.top_n_emotions
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_top_n_emotions(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.add_top_n_emotions(_previous_video_analysis_id bigint, _top_n_anger text, _top_n_disgust text, _top_n_fear text, _top_n_joy text, _top_n_neutral text, _top_n_sadness text, _top_n_surprise text)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.top_n_emotions
-(previous_video_analysis_id, top_n_anger, top_n_disgust, top_n_fear,
-top_n_joy, top_n_neutral, top_n_sadness, top_n_surprise)
-VALUES
-(_previous_video_analysis_id, _top_n_anger, _top_n_disgust, _top_n_fear,
-_top_n_joy, _top_n_neutral, _top_n_sadness, _top_n_surprise)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_top_n_emotions(bigint, text, text, text, text, text, text, text)
-    OWNER TO postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis
-    ALTER COLUMN previous_video_analysis_json DROP NOT NULL;
-
-CREATE PROCEDURE youtube_schema.seed_video_analysis(_video_id character varying, _previous_channel_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.previous_video_analysis 
-(video_id, previous_channel_analysis_id)
-VALUES 
-(_video_id, _previous_channel_analysis_id)
-$BODY$;
-ALTER PROCEDURE youtube_schema.seed_video_analysis(character varying, bigint)
-    OWNER TO postgres;
-
-ALTER TABLE IF EXISTS user_schema."user"
-    ALTER COLUMN date_of_birth DROP NOT NULL;
-
-ALTER TABLE IF EXISTS user_schema."user"
-    ALTER COLUMN primary_email DROP NOT NULL;
-
-ALTER TABLE IF EXISTS user_schema."user"
-    ALTER COLUMN telephone_number DROP NOT NULL;
-
-ALTER TABLE IF EXISTS user_schema."user"
-    ALTER COLUMN telephone_area_code DROP NOT NULL;
-
-CREATE PROCEDURE user_schema.add_basic_account_data_simplified(_primary_email character varying, _password character varying, _first_name character varying, _last_name character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO user_schema.user (username, "password", first_name, last_name,
-	primary_email)
-VALUES (_primary_email, _password, _first_name, _last_name,
-	_primary_email)
-$BODY$;
-ALTER PROCEDURE user_schema.add_basic_account_data_simplified(character varying, character varying, character varying, character varying)
-    OWNER TO postgres;
-
-CREATE TABLE youtube_schema.previous_video_analysis_latest_date
-(
-    previous_video_analysis_latest_date_id bigint NOT NULL,
-    previous_video_analysis_id bigint NOT NULL,
-    latest_date character varying(50) NOT NULL,
-    PRIMARY KEY (previous_video_analysis_latest_date_id)
-);
-
-ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis_latest_date
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis_latest_date
-    ALTER COLUMN previous_video_analysis_latest_date_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-ALTER TABLE IF EXISTS youtube_schema.previous_video_analysis_latest_date
-    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
-    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
-    ON youtube_schema.previous_video_analysis_latest_date(previous_video_analysis_id);
-
-CREATE TABLE youtube_schema.video_analysis_loading_status
-(
-    video_analysis_loading_status_id bigint NOT NULL,
-    previous_video_analysis_id bigint NOT NULL,
-    status character varying(5) NOT NULL,
-    PRIMARY KEY (video_analysis_loading_status_id)
-);
-
-ALTER TABLE IF EXISTS youtube_schema.video_analysis_loading_status
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.video_analysis_loading_status
-    ALTER COLUMN video_analysis_loading_status_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-ALTER TABLE IF EXISTS youtube_schema.video_analysis_loading_status
-    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
-    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_v
-    ON youtube_schema.video_analysis_loading_status(previous_video_analysis_id);
-
-ALTER TABLE IF EXISTS youtube_schema.video_analysis_loading_status
-    ADD COLUMN user_id bigint NOT NULL;
-
-ALTER TABLE IF EXISTS youtube_schema.video_analysis_loading_status
-    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
-    REFERENCES user_schema."user" (user_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_user_id_fkey
-    ON youtube_schema.video_analysis_loading_status(user_id);
-
-CREATE FUNCTION youtube_schema.check_previous_video_analysis_simplified(_video_id character varying)
-    RETURNS bigint
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT previous_video_analysis_id
-FROM youtube_schema.previous_video_analysis
-WHERE video_id = _video_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.check_previous_video_analysis_simplified(character varying)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.seed_video_analysis_simplified(_video_id character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.previous_video_analysis 
-(video_id)
-VALUES 
-(_video_id)
-$BODY$;
-ALTER PROCEDURE youtube_schema.seed_video_analysis_simplified(character varying)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.check_video_analysis_loading_status(_previous_video_analysis_id bigint)
-    RETURNS character varying
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT previous_video_analysis_id 
-FROM youtube_schema.video_analysis_loading_status
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.check_video_analysis_loading_status(bigint)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.check_video_analysis_loading_status_initiator(_previous_video_analysis_id bigint)
-    RETURNS bigint
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT user_id 
-FROM youtube_schema.video_analysis_loading_status
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.check_video_analysis_loading_status_initiator(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.add_video_analysis_status(_previous_video_analysis_id bigint, _status character varying, _user_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.video_analysis_loading_status
-(previous_video_analysis_id, status, user_id)
-VALUES
-(_previous_video_analysis_id, _status, _user_id)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_video_analysis_status(bigint, character varying, bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.update_video_analysis_status(_previous_video_analysis_id bigint, _status character varying, _user_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-UPDATE youtube_schema.video_analysis_loading_status
-SET status = _status, user_id = _user_id
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.update_video_analysis_status(bigint, character varying, bigint)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.check_latest_video_analysis_date(_previous_video_analysis_id bigint)
-    RETURNS character varying
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT latest_date
-FROM youtube_schema.previous_video_analysis_latest_date
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.check_latest_video_analysis_date(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.add_latest_video_analysis_date(_previous_video_analysis_id bigint, _latest_date character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.previous_video_analysis_latest_date
-(previous_video_analysis_id, latest_date)
-VALUES
-(_previous_video_analysis_id, _latest_date)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_latest_video_analysis_date(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.update_latest_video_analysis_date(_previous_video_analysis_id bigint, _latest_date character varying)
-LANGUAGE 'sql'
-AS $BODY$
-UPDATE youtube_schema.previous_video_analysis_latest_date
-SET latest_date = _latest_date
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.update_latest_video_analysis_date(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE TABLE youtube_schema.user_searched_video
-(
-    user_searched_video_id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    video_id character varying(50) NOT NULL,
-    PRIMARY KEY (user_searched_video_id)
-);
-
-ALTER TABLE IF EXISTS youtube_schema.user_searched_video
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.user_searched_video
-    ALTER COLUMN user_searched_video_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-ALTER TABLE IF EXISTS youtube_schema.user_searched_video
-    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
-    REFERENCES user_schema."user" (user_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_user_id_fkey
-    ON youtube_schema.user_searched_video(user_id);
-
-CREATE FUNCTION youtube_schema.check_user_searched_video(_user_id bigint)
-    RETURNS character varying
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT video_id
-FROM youtube_schema.user_searched_video
-WHERE user_id = _user_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.check_user_searched_video(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.add_user_searched_video(_user_id bigint, _video_id character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.user_searched_video
-(user_id, video_id)
-VALUES
-(_user_id, _video_id)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_user_searched_video(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.update_user_searched_video(_video_id character varying, _user_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-UPDATE youtube_schema.user_searched_video
-SET video_id = _video_id
-WHERE user_id = _user_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.update_user_searched_video(character varying, bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.delete_user_searched_video(_user_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.user_searched_video
-WHERE user_id = _user_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_user_searched_video(bigint)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.get_video_analysis_loading_status(_previous_video_analysis_id bigint)
-    RETURNS character varying
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT status 
-FROM youtube_schema.video_analysis_loading_status
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.get_video_analysis_loading_status(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.delete_emo_breakdown_comments(_previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.comment_emo_breakdown
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_emo_breakdown_comments(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE user_schema.auto_delete_user_session_for_testing()
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM user_schema.user_session 
-WHERE EXTRACT(EPOCH FROM now()-"timestamp")/10 >= 2
-$BODY$;
-ALTER PROCEDURE user_schema.auto_delete_user_session_for_testing()
-    OWNER TO postgres;
-
-CREATE FUNCTION user_schema.how_many_sessions_active(_user_id bigint)
-    RETURNS integer
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT COUNT(session_id)
-FROM user_schema.user_session
-WHERE user_id = _user_id
-$BODY$;
-
-ALTER FUNCTION user_schema.how_many_sessions_active(bigint)
-    OWNER TO postgres;
+(_logging_message, _timestamp, _user_id)$$;
+
+
+ALTER PROCEDURE logging_schema.add_latest_login_log_entry(IN _logging_message character varying, IN _timestamp timestamp with time zone, IN _user_id bigint) OWNER TO postgres;
+
+--
+-- TOC entry 371 (class 1255 OID 18181)
+-- Name: count_number_of_entries_in_login_logging_table(); Type: FUNCTION; Schema: logging_schema; Owner: postgres
+--
+
+CREATE FUNCTION logging_schema.count_number_of_entries_in_login_logging_table() RETURNS integer
+    LANGUAGE sql
+    AS $$SELECT COUNT(login_log_table_id) 
+FROM logging_schema.login_log_table $$;
+
+
+ALTER FUNCTION logging_schema.count_number_of_entries_in_login_logging_table() OWNER TO postgres;
+
+--
+-- TOC entry 369 (class 1255 OID 18178)
+-- Name: delete_login_log_entry(bigint); Type: PROCEDURE; Schema: logging_schema; Owner: postgres
+--
+
+CREATE PROCEDURE logging_schema.delete_login_log_entry(IN _login_log_table_id bigint)
+    LANGUAGE sql
+    AS $$DELETE FROM logging_schema.login_log_table
+WHERE
+login_log_table_id = _login_log_table_id$$;
+
+
+ALTER PROCEDURE logging_schema.delete_login_log_entry(IN _login_log_table_id bigint) OWNER TO postgres;
+
+--
+-- TOC entry 370 (class 1255 OID 18179)
+-- Name: get_logging_id_from_earliest_login_entry(); Type: FUNCTION; Schema: logging_schema; Owner: postgres
+--
+
+CREATE FUNCTION logging_schema.get_logging_id_from_earliest_login_entry() RETURNS bigint
+    LANGUAGE sql
+    AS $$SELECT login_log_table_id
+FROM logging_schema.login_log_table
+GROUP BY login_log_table_id
+HAVING "timestamp" = min(timestamp)$$;
+
+
+ALTER FUNCTION logging_schema.get_logging_id_from_earliest_login_entry() OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 264 (class 1259 OID 18157)
+-- Name: login_log_table; Type: TABLE; Schema: logging_schema; Owner: postgres
+--

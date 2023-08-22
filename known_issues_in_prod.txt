@@ -1,0 +1,8 @@
+
+1) CORS issues
+
+- If you encounter "no HTTP OK status", then psycopg2 might not be installed
+leading to issues between backend and DB.
+
+- If CORS complains about duplicated values, then the first fix to try is 
+to comment out the header entry in the NGINX file

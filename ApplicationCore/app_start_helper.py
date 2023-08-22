@@ -58,7 +58,7 @@ openai.api_key = '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'
 
 # !!! THIS IS THE MASTER SWITCH !!! (THERE IS ANOTHER EXCEPTIONAL MASTER
 # SWITCH IN CONFIG.PY TO PREVENT CIRCULAR IMPORTS)
-debug_switched_on = False
+debug_switched_on = True
 
 chat_gpt_testing = False
 
