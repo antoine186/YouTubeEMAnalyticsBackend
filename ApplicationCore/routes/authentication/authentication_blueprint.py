@@ -175,3 +175,13 @@ def login():
         db.session.execute(text(add_login_error_entry_sp), 
                                     {'logging_message': str(e), 'timestamp': now})
         db.session.commit()
+
+        operation_response = {
+            "operation_success": False,
+            "responsePayload": {
+            },
+            "error_message": "authentication_crashed_for_some_reason"
+        }
+        response = make_response(json.dumps(operation_response))
+
+        return response
