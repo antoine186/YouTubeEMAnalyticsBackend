@@ -3,6 +3,7 @@ sys.path.append('ApplicationCore')
 sys.path.append('ApplicationCore/routes')
 sys.path.append('ApplicationCore/scheduled_jobs')
 from scheduled_jobs.session_kick import session_kick
+from scheduled_jobs.error_logs_purge import error_logs_purge
 from scheduled_jobs.apscheduler_start_cleanup import apscheduler_start_cleanup
 #from scheduled_jobs.tagging_update import tagging_update
 
@@ -99,6 +100,7 @@ with app.app_context():
 
     session_kick()
     #tagging_update()
+    error_logs_purge()
     apscheduler_start_cleanup()
 
 if __name__ == '__main__':

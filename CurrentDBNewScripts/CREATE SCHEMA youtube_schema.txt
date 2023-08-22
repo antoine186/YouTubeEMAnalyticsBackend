@@ -1,127 +1,47 @@
-CREATE SCHEMA logging_schema;
-
-
-ALTER SCHEMA logging_schema OWNER TO postgres;
-
-CREATE TABLE logging_schema.login_log_table (
-    login_log_table_id bigint NOT NULL,
+CREATE TABLE logging_schema.login_error_table
+(
+    login_error_table_id bigint NOT NULL,
     logging_message character varying(50) NOT NULL,
-    "timestamp" timestamp with time zone NOT NULL,
-    user_id bigint NOT NULL
+    PRIMARY KEY (login_error_table_id)
 );
 
+ALTER TABLE IF EXISTS logging_schema.login_error_table
+    OWNER to postgres;
 
-ALTER TABLE logging_schema.login_log_table OWNER TO postgres;
+ALTER TABLE IF EXISTS logging_schema.login_error_table
+    ALTER COLUMN login_error_table_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
 
---
--- TOC entry 265 (class 1259 OID 18163)
--- Name: logging_log_table_logging_log_table_id_seq; Type: SEQUENCE; Schema: logging_schema; Owner: postgres
---
+CREATE FUNCTION logging_schema.count_number_of_entries_in_login_error_table()
+    RETURNS integer
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT COUNT(login_error_table_id)
+FROM logging_schema.login_error_table
+$BODY$;
 
-ALTER TABLE logging_schema.login_log_table ALTER COLUMN login_log_table_id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME logging_schema.logging_log_table_logging_log_table_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
+ALTER FUNCTION logging_schema.count_number_of_entries_in_login_error_table()
+    OWNER TO postgres;
 
+ALTER TABLE IF EXISTS logging_schema.login_error_table
+    ADD COLUMN "timestamp" timestamp with time zone NOT NULL;
 
---
--- TOC entry 3368 (class 2606 OID 18161)
--- Name: login_log_table login_log_table_pkey; Type: CONSTRAINT; Schema: logging_schema; Owner: postgres
---
+CREATE PROCEDURE logging_schema.add_login_error_entry(_logging_message character varying, _timestamp timestamp with time zone)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO logging_schema.login_error_table
+(logging_message, timestamp)
+VALUES
+(_logging_message, _timestamp)
+$BODY$;
+ALTER PROCEDURE logging_schema.add_login_error_entry(character varying, timestamp with time zone)
+    OWNER TO postgres;
 
-ALTER TABLE ONLY logging_schema.login_log_table
-    ADD CONSTRAINT login_log_table_pkey PRIMARY KEY (login_log_table_id);
-
-
---
--- TOC entry 3366 (class 1259 OID 18169)
--- Name: fki_user_id_fkey; Type: INDEX; Schema: logging_schema; Owner: postgres
---
-
-CREATE INDEX fki_user_id_fkey ON logging_schema.login_log_table USING btree (user_id);
-
-
---
--- TOC entry 3369 (class 2606 OID 18164)
--- Name: login_log_table user_id_fkey; Type: FK CONSTRAINT; Schema: logging_schema; Owner: postgres
---
-
-ALTER TABLE ONLY logging_schema.login_log_table
-    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id) REFERENCES user_schema."user"(user_id) NOT VALID;
-
-
--- Completed on 2023-08-22 15:35:15
-
---
--- PostgreSQL database dump complete
---
-
---
--- TOC entry 368 (class 1255 OID 18170)
--- Name: add_latest_login_log_entry(character varying, timestamp with time zone, bigint); Type: PROCEDURE; Schema: logging_schema; Owner: postgres
---
-
-CREATE PROCEDURE logging_schema.add_latest_login_log_entry(IN _logging_message character varying, IN _timestamp timestamp with time zone, IN _user_id bigint)
-    LANGUAGE sql
-    AS $$INSERT INTO logging_schema.login_log_table 
-(logging_message, "timestamp", user_id)
-VALUES 
-(_logging_message, _timestamp, _user_id)$$;
-
-
-ALTER PROCEDURE logging_schema.add_latest_login_log_entry(IN _logging_message character varying, IN _timestamp timestamp with time zone, IN _user_id bigint) OWNER TO postgres;
-
---
--- TOC entry 371 (class 1255 OID 18181)
--- Name: count_number_of_entries_in_login_logging_table(); Type: FUNCTION; Schema: logging_schema; Owner: postgres
---
-
-CREATE FUNCTION logging_schema.count_number_of_entries_in_login_logging_table() RETURNS integer
-    LANGUAGE sql
-    AS $$SELECT COUNT(login_log_table_id) 
-FROM logging_schema.login_log_table $$;
-
-
-ALTER FUNCTION logging_schema.count_number_of_entries_in_login_logging_table() OWNER TO postgres;
-
---
--- TOC entry 369 (class 1255 OID 18178)
--- Name: delete_login_log_entry(bigint); Type: PROCEDURE; Schema: logging_schema; Owner: postgres
---
-
-CREATE PROCEDURE logging_schema.delete_login_log_entry(IN _login_log_table_id bigint)
-    LANGUAGE sql
-    AS $$DELETE FROM logging_schema.login_log_table
-WHERE
-login_log_table_id = _login_log_table_id$$;
-
-
-ALTER PROCEDURE logging_schema.delete_login_log_entry(IN _login_log_table_id bigint) OWNER TO postgres;
-
---
--- TOC entry 370 (class 1255 OID 18179)
--- Name: get_logging_id_from_earliest_login_entry(); Type: FUNCTION; Schema: logging_schema; Owner: postgres
---
-
-CREATE FUNCTION logging_schema.get_logging_id_from_earliest_login_entry() RETURNS bigint
-    LANGUAGE sql
-    AS $$SELECT login_log_table_id
-FROM logging_schema.login_log_table
-GROUP BY login_log_table_id
-HAVING "timestamp" = min(timestamp)$$;
-
-
-ALTER FUNCTION logging_schema.get_logging_id_from_earliest_login_entry() OWNER TO postgres;
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
--- TOC entry 264 (class 1259 OID 18157)
--- Name: login_log_table; Type: TABLE; Schema: logging_schema; Owner: postgres
---
+CREATE PROCEDURE logging_schema.auto_delete_login_error_entry()
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM logging_schema.login_error_table 
+WHERE EXTRACT(EPOCH FROM now()-"timestamp")/3600 >= 2
+$BODY$;
+ALTER PROCEDURE logging_schema.auto_delete_login_error_entry()
+    OWNER TO postgres;
