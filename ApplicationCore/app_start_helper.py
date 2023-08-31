@@ -9,6 +9,7 @@ from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import openai
+import cohere
 
 from apiclient.discovery import build
 
@@ -54,17 +55,24 @@ rapidapi_key = "ddf2e48d8emsh02dbd4229cc9355p1a54eajsn7072e5a726e3"
 
 openai.api_key = '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'
 
+cohere_api_key = 'GDG3CKH8PDAoKuUsqnzKelIZHi5kiqrpKfTuVwzi'
+
+cohere_client = cohere.Client(cohere_api_key)
+
 # Switch variables below between prod and debug
 
 # !!! THIS IS THE MASTER SWITCH !!! (THERE IS ANOTHER EXCEPTIONAL MASTER
 # SWITCH IN CONFIG.PY TO PREVENT CIRCULAR IMPORTS)
-debug_switched_on = False
+debug_switched_on = True
 
-chat_gpt_testing = False
+llm_testing = False
 
 number_of_seconds_prod = 7200
-number_of_seconds_debug = 60
+number_of_seconds_debug = 60 * 10
 
 # Each page represents 20 comments
 number_of_comment_pages_prod = 50
 number_of_comment_pages_debug = 10
+
+# How many comments to generate video description
+number_of_comments_to_generate_video_description = 50

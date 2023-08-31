@@ -1,6 +1,9 @@
 server {
 	server_name emomachinesbackend.xyz www.emomachinesbackend.xyz;
 
+	error_log /var/log/nginx/error.log;
+	access_log /var/log/nginx/access.log;
+
 	location /api {
 		add_header 'Access-Control-Allow-Origin' "$http_origin" always;
         	add_header 'Access-Control-Allow-Credentials' 'true' always;

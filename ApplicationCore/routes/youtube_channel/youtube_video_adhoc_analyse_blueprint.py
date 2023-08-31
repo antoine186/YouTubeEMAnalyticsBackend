@@ -1,6 +1,6 @@
 from flask import Blueprint, request, make_response
 import json
-from app_start_helper import db, debug_switched_on
+from app_start_helper import db, debug_switched_on, number_of_comments_to_generate_video_description
 from sqlalchemy import text
 from Utils.json_encoder import GenericJsonEncoder
 from app_start_helper import youtube_object, rapidapi_key
@@ -12,8 +12,10 @@ from app_start_helper import mail, number_of_comment_pages_prod, number_of_comme
 import requests
 from Utils.youtube_api_utils.unpack_youtube_top_level_comments_yt_api import unpack_youtube_top_level_comments_yt_api
 from Utils.emo_utils.emo_mine_from_list_adhoc import emo_mine_from_list_adhoc
+from Utils.cohere_utils.generate_video_description_using_cohere import generate_video_description_using_cohere
 from datetime import datetime, timedelta, date
 import copy
+import random
 
 youtube_video_adhoc_analyse_blueprint = Blueprint('youtube_video_adhoc_analyse_blueprint', __name__)
 
@@ -257,8 +259,6 @@ def youtube_analyse():
 
         if latest_comment_today_time_difference.days >= 7:
             latest_date = today
-
-        print(pages_already_gotten)
         
         if first_latest_date:
             add_latest_video_analysis_date_sp = 'CALL youtube_schema.add_latest_video_analysis_date(:previous_video_analysis_id,:latest_date)'
@@ -270,6 +270,23 @@ def youtube_analyse():
             db.session.execute(text(update_latest_video_analysis_date_sp), 
                                     {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'latest_date': latest_date.strftime('%Y-%m-%d')})
             db.session.commit()
+
+        if len(raw_top_level_comments) < number_of_comments_to_generate_video_description:
+            if first_initiator:
+                update_video_analysis_status_sp = 'CALL youtube_schema.update_video_analysis_status(:previous_video_analysis_id,:status,:user_id)'
+                loading_status = 'false'
+                db.session.execute(text(update_video_analysis_status_sp), 
+                                        {'previous_video_analysis_id': previous_video_analysis_id[0][0], 'status': loading_status, 'user_id': user_id[0][0]})
+                db.session.commit()
+
+            operation_response = {
+                "operation_success": False,
+                "responsePayload": {
+                },
+                "error_message": "not_enough_comments_to_generate_video_description"
+            }
+            response = make_response(json.dumps(operation_response))
+            return response
 
         emo_breakdown_result_metadata, emo_breakdown_results = emo_mine_from_list_adhoc(raw_top_level_comments, video_title, published_date,
                                                                publisher, video_link, thumbnail, previous_video_analysis_id[0][0], payload['youtubeVideoInput'])
@@ -287,6 +304,22 @@ def youtube_analyse():
         db.session.execute(text(delete_emo_breakdown_comments_sp), 
                                     {'previous_video_analysis_id': previous_video_analysis_id[0][0]})
         db.session.commit()
+
+        check_video_approximated_description = 'SELECT youtube_schema.check_video_approximated_description(:previous_video_analysis_id)'
+        video_approximated_description_id = db.session.execute(text(check_video_approximated_description), 
+                                                            {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+        
+        raw_top_level_comments_for_video_description = raw_top_level_comments
+        
+        if len(raw_top_level_comments) != number_of_comments_to_generate_video_description:
+            raw_top_level_comments_for_video_description = random.sample(raw_top_level_comments, number_of_comments_to_generate_video_description)
+
+        if video_approximated_description_id[0][0] == None:
+            update_video_description = False
+            generate_video_description_using_cohere(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
+        else:
+            update_video_description = True
+            generate_video_description_using_cohere(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
 
         for emo_breakdown_result in emo_breakdown_results:
             save_comment_emo(previous_video_analysis_id[0][0], emo_breakdown_result)

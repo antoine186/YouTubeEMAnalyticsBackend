@@ -1,47 +1,65 @@
-CREATE TABLE logging_schema.login_error_table
+CREATE TABLE youtube_schema.video_approximated_description
 (
-    login_error_table_id bigint NOT NULL,
-    logging_message character varying(50) NOT NULL,
-    PRIMARY KEY (login_error_table_id)
+    video_approximated_description_id bigint NOT NULL,
+    previous_video_analysis_id bigint NOT NULL,
+    approximated_video_description text NOT NULL,
+    PRIMARY KEY (video_approximated_description_id)
 );
 
-ALTER TABLE IF EXISTS logging_schema.login_error_table
+ALTER TABLE IF EXISTS youtube_schema.video_approximated_description
     OWNER to postgres;
 
-ALTER TABLE IF EXISTS logging_schema.login_error_table
-    ALTER COLUMN login_error_table_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+ALTER TABLE IF EXISTS youtube_schema.video_approximated_description
+    ALTER COLUMN video_approximated_description_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
 
-CREATE FUNCTION logging_schema.count_number_of_entries_in_login_error_table()
-    RETURNS integer
+ALTER TABLE IF EXISTS youtube_schema.video_approximated_description
+    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
+    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
+    ON youtube_schema.video_approximated_description(previous_video_analysis_id);
+
+CREATE PROCEDURE youtube_schema.add_video_approximated_description(_previous_video_analysis_id bigint, _approximated_video_description text)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO youtube_schema.video_approximated_description
+(previous_video_analysis_id, approximated_video_description)
+VALUES
+(_previous_video_analysis_id, _approximated_video_description)
+$BODY$;
+ALTER PROCEDURE youtube_schema.add_video_approximated_description(bigint, text)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.update_video_approximated_description(_approximated_video_description text, _previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+UPDATE youtube_schema.video_approximated_description
+SET approximated_video_description = _approximated_video_description
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.update_video_approximated_description(text, bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.delete_video_approximated_description(_previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.video_approximated_description
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_video_approximated_description(bigint)
+    OWNER TO postgres;
+
+CREATE FUNCTION youtube_schema.check_video_approximated_description(_previous_video_analysis_id bigint)
+    RETURNS bigint
     LANGUAGE 'sql'
     
 AS $BODY$
-SELECT COUNT(login_error_table_id)
-FROM logging_schema.login_error_table
+SELECT video_approximated_description_id
+FROM youtube_schema.video_approximated_description
+WHERE previous_video_analysis_id = _previous_video_analysis_id
 $BODY$;
 
-ALTER FUNCTION logging_schema.count_number_of_entries_in_login_error_table()
-    OWNER TO postgres;
-
-ALTER TABLE IF EXISTS logging_schema.login_error_table
-    ADD COLUMN "timestamp" timestamp with time zone NOT NULL;
-
-CREATE PROCEDURE logging_schema.add_login_error_entry(_logging_message character varying, _timestamp timestamp with time zone)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO logging_schema.login_error_table
-(logging_message, timestamp)
-VALUES
-(_logging_message, _timestamp)
-$BODY$;
-ALTER PROCEDURE logging_schema.add_login_error_entry(character varying, timestamp with time zone)
-    OWNER TO postgres;
-
-CREATE PROCEDURE logging_schema.auto_delete_login_error_entry()
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM logging_schema.login_error_table 
-WHERE EXTRACT(EPOCH FROM now()-"timestamp")/3600 >= 2
-$BODY$;
-ALTER PROCEDURE logging_schema.auto_delete_login_error_entry()
+ALTER FUNCTION youtube_schema.check_video_approximated_description(bigint)
     OWNER TO postgres;
