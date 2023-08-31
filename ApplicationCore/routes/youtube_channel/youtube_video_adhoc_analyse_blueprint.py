@@ -272,6 +272,18 @@ def youtube_analyse():
             db.session.commit()
 
         if len(raw_top_level_comments) < number_of_comments_to_generate_video_description:
+            check_not_enough_comments = 'SELECT youtube_schema.check_not_enough_comments(:previous_video_analysis_id)'
+            check_not_enough_comments_id = db.session.execute(text(check_not_enough_comments), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+
+            if check_not_enough_comments_id[0][0] == None:
+                add_not_enough_comments_status_sp = 'CALL youtube_schema.add_not_enough_comments_status(:previous_video_analysis_id,:not_enough_comments)'
+                db.session.execute(text(add_not_enough_comments_status_sp), {'previous_video_analysis_id': previous_video_analysis_id[0][0],'not_enough_comments': 'True'})
+                db.session.commit()
+            else:
+                update_not_enough_comments_status_sp = 'CALL youtube_schema.update_not_enough_comments_status(:video_not_enough_comments_id,:not_enough_comments)'
+                db.session.execute(text(update_not_enough_comments_status_sp), {'video_not_enough_comments_id': check_not_enough_comments_id[0][0],'not_enough_comments': 'True'})
+                db.session.commit()
+
             if first_initiator:
                 update_video_analysis_status_sp = 'CALL youtube_schema.update_video_analysis_status(:previous_video_analysis_id,:status,:user_id)'
                 loading_status = 'false'

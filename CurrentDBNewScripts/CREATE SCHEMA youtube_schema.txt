@@ -63,3 +63,64 @@ $BODY$;
 
 ALTER FUNCTION youtube_schema.check_video_approximated_description(bigint)
     OWNER TO postgres;
+
+CREATE TABLE youtube_schema.video_not_enough_comments
+(
+    video_not_enough_comments_id bigint NOT NULL,
+    previous_video_analysis_id bigint NOT NULL,
+    not_enough_comments character varying(25) NOT NULL,
+    PRIMARY KEY (video_not_enough_comments_id)
+);
+
+ALTER TABLE IF EXISTS youtube_schema.video_not_enough_comments
+    OWNER to postgres;
+
+ALTER TABLE IF EXISTS youtube_schema.video_not_enough_comments
+    ALTER COLUMN video_not_enough_comments_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+
+ALTER TABLE IF EXISTS youtube_schema.video_not_enough_comments
+    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
+    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
+    ON youtube_schema.video_not_enough_comments(previous_video_analysis_id);
+
+CREATE FUNCTION youtube_schema.check_not_enough_comments(_previous_video_analysis_id bigint)
+    RETURNS bigint
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT video_not_enough_comments_id 
+FROM youtube_schema.video_not_enough_comments
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+
+ALTER FUNCTION youtube_schema.check_not_enough_comments(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.add_not_enough_comments_status(_previous_video_analysis_id bigint, _not_enough_comments character varying)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO youtube_schema.video_not_enough_comments
+(previous_video_analysis_id, not_enough_comments)
+VALUES
+(_previous_video_analysis_id, _not_enough_comments)
+$BODY$;
+ALTER PROCEDURE youtube_schema.add_not_enough_comments_status(bigint, character varying)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.update_not_enough_comments_status(_video_not_enough_comments_id bigint, _not_enough_comments character varying)
+LANGUAGE 'sql'
+AS $BODY$
+UPDATE youtube_schema.video_not_enough_comments
+SET not_enough_comments = _not_enough_comments
+WHERE video_not_enough_comments_id = _video_not_enough_comments_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.update_not_enough_comments_status(bigint, character varying)
+    OWNER TO postgres;
+
+
+
+

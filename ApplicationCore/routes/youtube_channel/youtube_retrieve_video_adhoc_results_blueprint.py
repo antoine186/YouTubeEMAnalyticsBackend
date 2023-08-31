@@ -35,8 +35,6 @@ def youtube_retrieve_video_adhoc_results():
         video_analysis_loading_status = db.session.execute(text(get_video_analysis_loading_status), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
 
         if video_analysis_loading_status[0][0] != None:
-            xyz = video_analysis_loading_status[0][0]
-            xyz2 = xyz == 'true'
             if video_analysis_loading_status[0][0] == 'true':
                 operation_response = {
                     "operation_success": False,
@@ -65,10 +63,34 @@ def youtube_retrieve_video_adhoc_results():
         response = make_response(json.dumps(operation_response))
         return response
     
-    get_previous_video_analysis = 'SELECT youtube_schema.get_previous_video_analysis(:previous_video_analysis_id)'
-    previous_video_analysis = db.session.execute(text(get_previous_video_analysis), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+    check_not_enough_comments = 'SELECT youtube_schema.check_not_enough_comments(:previous_video_analysis_id)'
+    check_not_enough_comments_id = db.session.execute(text(check_not_enough_comments), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
 
-    previous_video_analysis = json.loads(previous_video_analysis[0][0])
+    if check_not_enough_comments_id[0][0] == None:
+        if check_not_enough_comments_id[0][0] == 'True':
+            operation_response = {
+                "operation_success": False,
+                "responsePayload": {
+                },
+                "error_message": "not_enough_comments_to_generate_video_description"
+            }
+            response = make_response(json.dumps(operation_response))
+            return response
+    
+    try:
+        get_previous_video_analysis = 'SELECT youtube_schema.get_previous_video_analysis(:previous_video_analysis_id)'
+        previous_video_analysis = db.session.execute(text(get_previous_video_analysis), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+
+        previous_video_analysis = json.loads(previous_video_analysis[0][0])
+    except Exception as e:
+        operation_response = {
+            "operation_success": False,
+            "responsePayload": {
+            },
+            "error_message": ""
+        }
+        response = make_response(json.dumps(operation_response))
+        return response
 
     """
     if previous_video_analysis[0][0] != None:
