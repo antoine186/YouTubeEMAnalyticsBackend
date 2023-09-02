@@ -1,11 +1,19 @@
-from app_start_helper import number_of_comments_to_generate_video_description, llm_testing, cohere_client, db
+from app_start_helper import number_of_comments_in_tranch_to_generate_video_description, llm_testing, cohere_client, db
 from sqlalchemy import text
+from Utils.list_divide_into_lists import list_divide_into_lists
+from Utils.cohere_utils.summarise_from_list_using_cohere import summarise_from_list_using_cohere
 
 def generate_video_description_using_cohere(raw_comments, previous_video_analysis_id, update_video_description):
     try:
+        raw_comments_tranch_lists = list_divide_into_lists(raw_comments, number_of_comments_in_tranch_to_generate_video_description)
+
+        overall_summarised_comments = ''
+        for raw_comments_tranch_list in raw_comments_tranch_lists:
+            tranch_list_summary = summarise_from_list_using_cohere(raw_comments_tranch_list, cohere_client, llm_testing)
+            overall_summarised_comments += tranch_list_summary + '. '
+
         prompt_string = 'Please summarise what the video is about using the following comments it got: '
-        for comment in raw_comments:
-            prompt_string += comment + '. '
+        prompt_string += overall_summarised_comments
 
         if llm_testing:
             reply = 'Example cohere response'

@@ -76,3 +76,4 @@ number_of_comment_pages_debug = 10
 
 # How many comments to generate video description
 number_of_comments_to_generate_video_description = 50
+number_of_comments_in_tranch_to_generate_video_description = 10

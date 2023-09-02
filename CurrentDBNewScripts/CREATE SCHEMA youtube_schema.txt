@@ -121,6 +121,17 @@ $BODY$;
 ALTER PROCEDURE youtube_schema.update_not_enough_comments_status(bigint, character varying)
     OWNER TO postgres;
 
+CREATE FUNCTION youtube_schema.get_video_approximated_description(_video_approximated_description_id bigint)
+    RETURNS text
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT approximated_video_description
+FROM youtube_schema.video_approximated_description
+WHERE video_approximated_description_id = _video_approximated_description_id
+$BODY$;
 
+ALTER FUNCTION youtube_schema.get_video_approximated_description(bigint)
+    OWNER TO postgres;
 
 

@@ -91,6 +91,25 @@ def youtube_retrieve_video_adhoc_results():
         }
         response = make_response(json.dumps(operation_response))
         return response
+    
+    try:
+        check_video_approximated_description = 'SELECT youtube_schema.check_video_approximated_description(:previous_video_analysis_id)'
+        video_approximated_description_id = db.session.execute(text(check_video_approximated_description), {'previous_video_analysis_id': previous_video_analysis_id[0][0]}).fetchall()
+
+        if video_approximated_description_id[0][0] != None:
+            get_video_approximated_description = 'SELECT youtube_schema.get_video_approximated_description(:video_approximated_description_id)'
+            video_approximated_description = db.session.execute(text(get_video_approximated_description), {'video_approximated_description_id': video_approximated_description_id[0][0]}).fetchall()
+        else:
+            raise Exception("There is no video description")
+    except Exception as e:
+        operation_response = {
+            "operation_success": False,
+            "responsePayload": {
+            },
+            "error_message": ""
+        }
+        response = make_response(json.dumps(operation_response))
+        return response
 
     """
     if previous_video_analysis[0][0] != None:
@@ -144,7 +163,8 @@ def youtube_retrieve_video_adhoc_results():
              'top_n_neutral': top_n_neutral,
              'top_n_sadness': top_n_sadness,
              'top_n_surprise': top_n_surprise,
-             'average_emo_breakdown': previous_video_analysis['average_emo_breakdown']
+             'average_emo_breakdown': previous_video_analysis['average_emo_breakdown'],
+             'video_approximated_description': video_approximated_description[0][0]
         },
     }
     response = make_response(json.dumps(operation_response))

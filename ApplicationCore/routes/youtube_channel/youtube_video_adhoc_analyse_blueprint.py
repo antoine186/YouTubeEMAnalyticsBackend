@@ -13,6 +13,7 @@ import requests
 from Utils.youtube_api_utils.unpack_youtube_top_level_comments_yt_api import unpack_youtube_top_level_comments_yt_api
 from Utils.emo_utils.emo_mine_from_list_adhoc import emo_mine_from_list_adhoc
 from Utils.cohere_utils.generate_video_description_using_cohere import generate_video_description_using_cohere
+from Utils.chatgpt_api_utils.generate_video_description_using_chatgpt import generate_video_description_using_chatgpt
 from datetime import datetime, timedelta, date
 import copy
 import random
@@ -328,10 +329,16 @@ def youtube_analyse():
 
         if video_approximated_description_id[0][0] == None:
             update_video_description = False
-            generate_video_description_using_cohere(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
+            if payload['llmModel'] == 'cohere':
+                generate_video_description_using_cohere(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
+            elif payload['llmModel'] == 'chatgpt':
+                generate_video_description_using_chatgpt(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
         else:
             update_video_description = True
-            generate_video_description_using_cohere(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
+            if payload['llmModel'] == 'cohere':
+                generate_video_description_using_cohere(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
+            elif payload['llmModel'] == 'chatgpt':
+                generate_video_description_using_chatgpt(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
 
         for emo_breakdown_result in emo_breakdown_results:
             save_comment_emo(previous_video_analysis_id[0][0], emo_breakdown_result)
