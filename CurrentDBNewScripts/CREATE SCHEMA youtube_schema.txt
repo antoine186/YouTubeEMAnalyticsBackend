@@ -239,3 +239,19 @@ WHERE previous_video_analysis_id = _previous_video_analysis_id
 $BODY$;
 ALTER PROCEDURE youtube_schema.delete_video_not_enough_comments_status(bigint)
     OWNER TO postgres;
+
+CREATE PROCEDURE user_schema.purge_password_reset()
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM user_schema.password_reset
+$BODY$;
+ALTER PROCEDURE user_schema.purge_password_reset()
+    OWNER TO postgres;
+
+CREATE PROCEDURE user_schema.purge_user_session()
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM user_schema.user_session
+$BODY$;
+ALTER PROCEDURE user_schema.purge_user_session()
+    OWNER TO postgres;

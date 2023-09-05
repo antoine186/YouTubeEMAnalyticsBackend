@@ -6,6 +6,7 @@ from scheduled_jobs.session_kick import session_kick
 from scheduled_jobs.error_logs_purge import error_logs_purge
 from scheduled_jobs.apscheduler_start_cleanup import apscheduler_start_cleanup
 from db_cleanup_on_reboot.youtube_schema_tables_cleanup import youtube_schema_tables_cleanup
+from db_cleanup_on_reboot.user_schema_tables_cleanup import user_schema_tables_cleanup
 #from scheduled_jobs.tagging_update import tagging_update
 
 from app_start_helper import app, db
@@ -101,6 +102,7 @@ with app.app_context():
 
     # DB cleanups on boot up
     youtube_schema_tables_cleanup()
+    user_schema_tables_cleanup()
 
     session_kick()
     #tagging_update()

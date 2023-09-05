@@ -7,7 +7,7 @@ def youtube_schema_tables_cleanup():
 
     for loading_video in all_loading_videos:
         delete_all_loading_video_data_from_youtube_schema(loading_video.previous_video_analysis_id, loading_video.user_id)
-        
+
 
 def delete_all_loading_video_data_from_youtube_schema(previous_video_analysis_id, user_id):
     """ Delete for
@@ -71,9 +71,3 @@ def delete_all_loading_video_data_from_youtube_schema(previous_video_analysis_id
     db.session.execute(text(delete_video_analysis_sp), 
                         {'previous_video_analysis_id': previous_video_analysis_id})
     db.session.commit()
-
-    #check_user_searched_video = 'SELECT youtube_schema.check_user_searched_video(:user_id)'
-    #video_id = db.session.execute(text(check_user_searched_video), {'user_id': user_id}).fetchall()
-
-    #if video_id[0][0] != None:
-        #
