@@ -255,3 +255,16 @@ DELETE FROM user_schema.user_session
 $BODY$;
 ALTER PROCEDURE user_schema.purge_user_session()
     OWNER TO postgres;
+
+CREATE FUNCTION user_schema.count_password_reset_tokens_for_user(_user_id bigint)
+    RETURNS integer
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT COUNT(password_reset_id) 
+FROM user_schema.password_reset 
+WHERE user_id = _user_id
+$BODY$;
+
+ALTER FUNCTION user_schema.count_password_reset_tokens_for_user(bigint)
+    OWNER TO postgres;

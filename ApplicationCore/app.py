@@ -52,6 +52,7 @@ from youtube_channel.comments_llm_emo_elaboration_blueprint import comments_llm_
 from youtube_channel.youtube_video_adhoc_analyse_blueprint import youtube_video_adhoc_analyse_blueprint
 from youtube_channel.youtube_retrieve_video_adhoc_results_blueprint import youtube_retrieve_video_adhoc_results_blueprint
 from authentication.remove_session_blueprint import remove_session_blueprint
+from server.check_if_server_up_blueprint import check_if_server_up_blueprint
 
 # app.register_blueprint(user_bp, url_prefix='/users')
 app.register_blueprint(main_page_blueprint)
@@ -96,6 +97,7 @@ app.register_blueprint(comments_llm_emo_elaboration_blueprint)
 app.register_blueprint(youtube_video_adhoc_analyse_blueprint)
 app.register_blueprint(youtube_retrieve_video_adhoc_results_blueprint)
 app.register_blueprint(remove_session_blueprint)
+app.register_blueprint(check_if_server_up_blueprint)
 
 with app.app_context():
     db.init_app(app)
