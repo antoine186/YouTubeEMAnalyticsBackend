@@ -1,8 +1,10 @@
-from app_start_helper import number_of_comments_in_tranch_to_generate_video_description, llm_testing, db
+from app_start_helper import number_of_comments_in_tranch_to_generate_video_description, llm_testing, db, chat_gpt_response_from_rapid_api, chatgpt4_rapidapi_url, rapidapi_key
 from sqlalchemy import text
 from Utils.list_divide_into_lists import list_divide_into_lists
 from Utils.chatgpt_api_utils.summarise_from_list_using_chatgpt import summarise_from_list_using_chatgpt
 import openai
+import json
+import requests
 
 def generate_video_description_using_chatgpt(raw_comments, previous_video_analysis_id, update_video_description):
     try:
@@ -13,18 +15,31 @@ def generate_video_description_using_chatgpt(raw_comments, previous_video_analys
             tranch_list_summary = summarise_from_list_using_chatgpt(raw_comments_tranch_list, llm_testing)
             overall_summarised_comments += tranch_list_summary + '. '
 
-        prompt_string = 'Please summarise without mentioning viewers what the video is about using the following comments it got: '
+        prompt_string = 'Please summarise what the video is about using the following comments it got: '
         prompt_string += overall_summarised_comments
 
         if llm_testing:
             reply = 'Example ChatGPT response'
         else:
-            messages = [ {"role": "system", "content": prompt_string} ]
-            chat = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo", messages=messages, max_tokens=300
-                )
-            
-            reply = chat.choices[0].message.content
+            if chat_gpt_response_from_rapid_api:
+                payload = { "query": prompt_string, "wordLimit":"300" }
+                headers = {
+                    "content-type": "application/json",
+                    "X-RapidAPI-Key": rapidapi_key,
+                    "X-RapidAPI-Host": "chatgpt-gpt4-ai-chatbot.p.rapidapi.com"
+                }
+
+                response = requests.post(chatgpt4_rapidapi_url, json=payload, headers=headers)
+
+                response = json.loads(response.text)
+                reply = response['response']
+            else:
+                messages = [ {"role": "system", "content": prompt_string} ]
+                chat = openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo", messages=messages, max_tokens=300
+                    )
+                
+                reply = chat.choices[0].message.content
 
         if update_video_description:
             update_video_approximated_description_sp = 'CALL youtube_schema.update_video_approximated_description(:approximated_video_description,:previous_video_analysis_id)'

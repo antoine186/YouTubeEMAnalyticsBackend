@@ -5,6 +5,7 @@ sys.path.append('ApplicationCore/scheduled_jobs')
 from scheduled_jobs.session_kick import session_kick
 from scheduled_jobs.error_logs_purge import error_logs_purge
 from scheduled_jobs.apscheduler_start_cleanup import apscheduler_start_cleanup
+from db_cleanup_on_reboot.youtube_schema_tables_cleanup import youtube_schema_tables_cleanup
 #from scheduled_jobs.tagging_update import tagging_update
 
 from app_start_helper import app, db
@@ -97,6 +98,9 @@ app.register_blueprint(remove_session_blueprint)
 
 with app.app_context():
     db.init_app(app)
+
+    # DB cleanups on boot up
+    youtube_schema_tables_cleanup()
 
     session_kick()
     #tagging_update()

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, make_response
 import json
-from app_start_helper import db, debug_switched_on, number_of_comments_to_generate_video_description
+from app_start_helper import db, debug_switched_on, number_of_comments_to_generate_video_description, youtube_comments_rapidapi_url
 from sqlalchemy import text
 from Utils.json_encoder import GenericJsonEncoder
 from app_start_helper import youtube_object, rapidapi_key
@@ -17,6 +17,7 @@ from Utils.chatgpt_api_utils.generate_video_description_using_chatgpt import gen
 from datetime import datetime, timedelta, date
 import copy
 import random
+from Utils.chatgpt_api_utils.define_viewers_in_video_using_chatgpt import define_viewers_in_video_using_chatgpt
 
 youtube_video_adhoc_analyse_blueprint = Blueprint('youtube_video_adhoc_analyse_blueprint', __name__)
 
@@ -177,8 +178,6 @@ def youtube_analyse():
             thumbnail = video_details['items'][0]['snippet']['thumbnails']['medium']['url']
         elif 'default' in video_details['items'][0]['snippet']['thumbnails'].keys():
             thumbnail = video_details['items'][0]['snippet']['thumbnails']['default']['url']
-        
-        url = "https://yt-api.p.rapidapi.com/comments"
 
         querystring = {"id":payload['youtubeVideoInput'], "sort_by": "newest"}
 
@@ -187,7 +186,7 @@ def youtube_analyse():
             "X-RapidAPI-Host": "yt-api.p.rapidapi.com"
         }
 
-        response = requests.get(url, headers=headers, params=querystring)
+        response = requests.get(youtube_comments_rapidapi_url, headers=headers, params=querystring)
         content_raw = response.content.decode("utf-8")
         content_json = json.loads(content_raw)
 
@@ -243,7 +242,7 @@ def youtube_analyse():
             print('Getting to the next pageToken for ' + video_title)
             querystring = {"id":payload['youtubeVideoInput'], "token":content_json['continuation'], "sort_by": "newest"}
 
-            response = requests.get(url, headers=headers, params=querystring)
+            response = requests.get(youtube_comments_rapidapi_url, headers=headers, params=querystring)
 
             content_raw = response.content.decode("utf-8")
             content_json = json.loads(content_raw)
@@ -333,12 +332,14 @@ def youtube_analyse():
                 generate_video_description_using_cohere(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
             elif payload['llmModel'] == 'chatgpt':
                 generate_video_description_using_chatgpt(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
+                define_viewers_in_video_using_chatgpt(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
         else:
             update_video_description = True
             if payload['llmModel'] == 'cohere':
                 generate_video_description_using_cohere(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
             elif payload['llmModel'] == 'chatgpt':
                 generate_video_description_using_chatgpt(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
+                define_viewers_in_video_using_chatgpt(raw_top_level_comments_for_video_description, previous_video_analysis_id[0][0], update_video_description)
 
         for emo_breakdown_result in emo_breakdown_results:
             save_comment_emo(previous_video_analysis_id[0][0], emo_breakdown_result)

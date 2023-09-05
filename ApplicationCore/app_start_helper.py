@@ -59,6 +59,10 @@ cohere_api_key = 'GDG3CKH8PDAoKuUsqnzKelIZHi5kiqrpKfTuVwzi'
 
 cohere_client = cohere.Client(cohere_api_key)
 
+youtube_comments_rapidapi_url = "https://yt-api.p.rapidapi.com/comments"
+
+chatgpt4_rapidapi_url = "https://chatgpt-gpt4-ai-chatbot.p.rapidapi.com/ask"
+
 # Switch variables below between prod and debug
 
 # !!! THIS IS THE MASTER SWITCH !!! (THERE IS ANOTHER EXCEPTIONAL MASTER
@@ -66,6 +70,7 @@ cohere_client = cohere.Client(cohere_api_key)
 debug_switched_on = True
 
 llm_testing = False
+chat_gpt_response_from_rapid_api = True
 
 number_of_seconds_prod = 7200
 number_of_seconds_debug = 60 * 10

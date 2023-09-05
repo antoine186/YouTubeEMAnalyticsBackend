@@ -134,4 +134,108 @@ $BODY$;
 ALTER FUNCTION youtube_schema.get_video_approximated_description(bigint)
     OWNER TO postgres;
 
+CREATE TABLE youtube_schema.who_are_viewers_approximated
+(
+    who_are_viewers_approximated_id bigint NOT NULL,
+    previous_video_analysis_id bigint NOT NULL,
+    who_are_viewers_approximated text NOT NULL,
+    PRIMARY KEY (who_are_viewers_approximated_id)
+);
 
+ALTER TABLE IF EXISTS youtube_schema.who_are_viewers_approximated
+    OWNER to postgres;
+
+ALTER TABLE IF EXISTS youtube_schema.who_are_viewers_approximated
+    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
+    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
+    ON youtube_schema.who_are_viewers_approximated(previous_video_analysis_id);
+
+ALTER TABLE IF EXISTS youtube_schema.who_are_viewers_approximated
+    ALTER COLUMN who_are_viewers_approximated_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+
+CREATE FUNCTION youtube_schema.check_who_are_viewers_approximated(_previous_video_analysis_id bigint)
+    RETURNS bigint
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT who_are_viewers_approximated_id
+FROM youtube_schema.who_are_viewers_approximated
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+
+ALTER FUNCTION youtube_schema.check_who_are_viewers_approximated(bigint)
+    OWNER TO postgres;
+
+CREATE FUNCTION youtube_schema.get_who_are_viewers_approximated(_who_are_viewers_approximated_id bigint)
+    RETURNS text
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT who_are_viewers_approximated
+FROM youtube_schema.who_are_viewers_approximated
+WHERE who_are_viewers_approximated_id = _who_are_viewers_approximated_id
+$BODY$;
+
+ALTER FUNCTION youtube_schema.get_who_are_viewers_approximated(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.add_who_are_viewers_approximated(_previous_video_analysis_id bigint, _who_are_viewers_approximated text)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO youtube_schema.who_are_viewers_approximated
+(previous_video_analysis_id, who_are_viewers_approximated)
+VALUES
+(_previous_video_analysis_id, _who_are_viewers_approximated)
+$BODY$;
+ALTER PROCEDURE youtube_schema.add_who_are_viewers_approximated(bigint, text)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.update_who_are_viewers_approximated(_who_are_viewers_approximated text, _previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+UPDATE youtube_schema.who_are_viewers_approximated
+SET who_are_viewers_approximated = _who_are_viewers_approximated
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.update_who_are_viewers_approximated(text, bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.delete_who_are_viewers_approximated(_previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.who_are_viewers_approximated
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_who_are_viewers_approximated(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.delete_latest_video_analysis_date(_previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.previous_video_analysis_latest_date
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_latest_video_analysis_date(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.delete_video_analysis_status(_previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.video_analysis_loading_status
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_video_analysis_status(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE youtube_schema.delete_video_not_enough_comments_status(_previous_video_analysis_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM youtube_schema.video_not_enough_comments
+WHERE previous_video_analysis_id = _previous_video_analysis_id
+$BODY$;
+ALTER PROCEDURE youtube_schema.delete_video_not_enough_comments_status(bigint)
+    OWNER TO postgres;
