@@ -268,3 +268,5 @@ $BODY$;
 
 ALTER FUNCTION user_schema.count_password_reset_tokens_for_user(bigint)
     OWNER TO postgres;
+
+

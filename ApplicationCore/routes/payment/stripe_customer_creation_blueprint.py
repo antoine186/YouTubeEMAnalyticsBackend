@@ -17,6 +17,10 @@ def stripe_customer_create():
     payload = json.loads(payload)
 
     try:
+        stripe_customer_search_result = stripe.Customer.search(
+            query="email:'{}'".format(payload['accountCreationData']['emailAddress']),
+        )
+
         new_stripe_customer = stripe.Customer.create(
         email=payload['accountCreationData']['emailAddress'],
         name=payload['accountCreationData']['firstName'] + " " + payload['accountCreationData']['lastName'],
