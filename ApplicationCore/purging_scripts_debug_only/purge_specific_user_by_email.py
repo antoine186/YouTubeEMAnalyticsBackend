@@ -14,6 +14,9 @@ def purge_specific_user_by_email(email, delete_remote_stripe_entities):
     might have had a successful subscription created.
     """
 
+    if email == '':
+        return True
+
     get_user_id = 'SELECT user_schema.get_user_id(:username)'
 
     user_id = db.session.execute(text(get_user_id), {'username': email}).fetchall()

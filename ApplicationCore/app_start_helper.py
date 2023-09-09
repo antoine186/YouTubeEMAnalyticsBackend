@@ -69,12 +69,15 @@ chatgpt4_rapidapi_url = "https://chatgpt-gpt4-ai-chatbot.p.rapidapi.com/ask"
 # SWITCH IN CONFIG.PY TO PREVENT CIRCULAR IMPORTS)
 debug_switched_on = True
 
+# 1) LLM switches & params
 llm_testing = False
 chat_gpt_response_from_rapid_api = True
 
+# 2) Session duration switches & params
 number_of_seconds_prod = 7200
 number_of_seconds_debug = 60 * 10
 
+# 3) YouTube comments switches & params
 # Each page represents 20 comments
 number_of_comment_pages_prod = 50
 number_of_comment_pages_debug = 10
@@ -83,5 +86,6 @@ number_of_comment_pages_debug = 10
 number_of_comments_to_generate_video_description = 50
 number_of_comments_in_tranch_to_generate_video_description = 10
 
-debug_purging_on = True
+# 4) Purging on boot up switches & params
+debug_purging_on = debug_switched_on
 remote_stripe_entities_purging = True
