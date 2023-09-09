@@ -7,7 +7,12 @@ from Utils.logging_utils.delete_logging_data_for_user_helper import delete_loggi
 
 
 def purge_specific_user_by_email(email, delete_remote_stripe_entities):
-    """This purging function is unsafe when main program is running"""
+    """This purging function is unsafe when main program is running
+    
+    As opposed to stripe_customer_shallow_remote_cleanup(), this function is to
+    purge a user from both DB and Stripe where the user was correctly created and
+    might have had a successful subscription created.
+    """
 
     get_user_id = 'SELECT user_schema.get_user_id(:username)'
 
