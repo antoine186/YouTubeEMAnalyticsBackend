@@ -269,4 +269,12 @@ $BODY$;
 ALTER FUNCTION user_schema.count_password_reset_tokens_for_user(bigint)
     OWNER TO postgres;
 
-
+CREATE PROCEDURE logging_schema.delete_all_login_log_entries_for_users(_user_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM logging_schema.login_log_table
+WHERE
+user_id = _user_id
+$BODY$;
+ALTER PROCEDURE logging_schema.delete_all_login_log_entries_for_users(bigint)
+    OWNER TO postgres;

@@ -3,6 +3,7 @@ from sqlalchemy import text
 import stripe
 from db_cleanup_on_reboot.youtube_schema_tables_cleanup import delete_all_loading_video_data_from_youtube_schema
 from Utils.youtube_api_utils.delete_analysis_metadata_from_youtube_schema_for_user import delete_analysis_metadata_from_youtube_schema_for_user
+from Utils.logging_utils.delete_logging_data_for_user_helper import delete_logging_data_for_user_helper
 
 
 def purge_specific_user_by_email(email, delete_remote_stripe_entities):
@@ -82,6 +83,7 @@ def purge_specific_user_by_email(email, delete_remote_stripe_entities):
     db.session.commit()
 
     delete_analysis_metadata_from_youtube_schema_for_user(user_id[0][0])
+    delete_logging_data_for_user_helper(user_id[0][0])
 
     purge_password_reset_sp = 'CALL user_schema.purge_password_reset()'
     db.session.execute(text(purge_password_reset_sp), 
