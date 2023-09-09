@@ -17,9 +17,20 @@ def stripe_customer_create():
     payload = json.loads(payload)
 
     try:
-        stripe_customer_search_result = stripe.Customer.search(
-            query="email:'{}'".format(payload['accountCreationData']['emailAddress']),
-        )
+        #check_stripe_customer_creation_status = 'SELECT payment_schema.check_stripe_customer_creation_status(:user_id)'
+        #stripe_customer_creation_status_id = db.session.execute(text(check_stripe_customer_creation_status), {'user_id': user_id[0][0]}).fetchall()
+
+        #stripe_customer_creation_status_id != None:
+            #
+
+        get_user_id = 'SELECT user_schema.get_user_id(:username)'
+
+        user_id = db.session.execute(text(get_user_id), {'username': payload['accountCreationData']['emailAddress']}).fetchall()
+
+        add_stripe_customer_creation_status_sp = 'CALL payment_schema.add_stripe_customer_creation_status(:user_id,:status)'
+
+        db.session.execute(text(add_stripe_customer_creation_status_sp), {'user_id': user_id[0][0], 'status': 'true'})
+        db.session.commit()
 
         new_stripe_customer = stripe.Customer.create(
         email=payload['accountCreationData']['emailAddress'],
@@ -27,13 +38,14 @@ def stripe_customer_create():
         )
 
         # DB operations here
-        get_user_id = 'SELECT user_schema.get_user_id(:username)'
-
-        user_id = db.session.execute(text(get_user_id), {'username': payload['accountCreationData']['emailAddress']}).fetchall()
-
         add_stripe_customer_sp = 'CALL payment_schema.add_stripe_customer(:user_id,:stripe_customer_id)'
 
         db.session.execute(text(add_stripe_customer_sp), {'user_id': user_id[0][0], 'stripe_customer_id': new_stripe_customer.id})
+        db.session.commit()
+
+        delete_stripe_customer_creation_status_sp = 'CALL payment_schema.delete_stripe_customer_creation_status(:user_id)'
+
+        db.session.execute(text(delete_stripe_customer_creation_status_sp), {'user_id': user_id[0][0]})
         db.session.commit()
 
         operation_response = {

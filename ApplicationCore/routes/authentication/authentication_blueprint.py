@@ -1,6 +1,6 @@
 from flask import Blueprint, request, make_response
 from sqlalchemy import text
-from models.user_safe_view import UserSafeView
+from models.user_schema.user_safe_view import UserSafeView
 from app_start_helper import db, debug_switched_on, number_of_seconds_prod, number_of_seconds_debug
 from Utils.create_secret_token import create_secret_token
 import json

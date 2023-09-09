@@ -1,6 +1,6 @@
 from app_start_helper import db
 from sqlalchemy import text
-from models.video_analysis_loading_status import VideoAnalysisLoadingStatus
+from models.youtube_schema.video_analysis_loading_status import VideoAnalysisLoadingStatus
 
 def user_schema_tables_cleanup():
     delete_all_user_session_data_from_user_schema()

@@ -16,7 +16,7 @@ from sqlalchemy import text
 from app_start_helper import db
 import json
 from Utils.json_encoder import GenericJsonEncoder
-from models.top_n_emotions import TopNEmotions
+from models.youtube_schema.top_n_emotions import TopNEmotions
 
 def emo_mine_from_list_adhoc(text_list, video_title, published_date, publisher, video_link, thumbnail, previous_video_analysis_id, video_id):
     emo_breakdown_results = []

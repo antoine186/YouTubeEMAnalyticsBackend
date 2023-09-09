@@ -278,3 +278,59 @@ user_id = _user_id
 $BODY$;
 ALTER PROCEDURE logging_schema.delete_all_login_log_entries_for_users(bigint)
     OWNER TO postgres;
+
+CREATE TABLE payment_schema.stripe_customer_creation_status
+(
+    stripe_customer_creation_status_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    status character varying(50) NOT NULL,
+    PRIMARY KEY (stripe_customer_creation_status_id)
+);
+
+ALTER TABLE IF EXISTS payment_schema.stripe_customer_creation_status
+    OWNER to postgres;
+
+ALTER TABLE IF EXISTS payment_schema.stripe_customer_creation_status
+    ALTER COLUMN stripe_customer_creation_status_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+
+ALTER TABLE IF EXISTS payment_schema.stripe_customer_creation_status
+    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES user_schema."user" (user_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_user_id_fkey
+    ON payment_schema.stripe_customer_creation_status(user_id);
+
+CREATE FUNCTION payment_schema.check_stripe_customer_creation_status(_user_id bigint)
+    RETURNS bigint
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT stripe_customer_creation_status_id
+FROM payment_schema.stripe_customer_creation_status
+WHERE user_id = _user_id
+$BODY$;
+
+ALTER FUNCTION payment_schema.check_stripe_customer_creation_status(bigint)
+    OWNER TO postgres;
+
+CREATE PROCEDURE payment_schema.add_stripe_customer_creation_status(_user_id bigint, _status character varying)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO payment_schema.stripe_customer_creation_status
+(user_id, status)
+VALUES
+(_user_id, _status)
+$BODY$;
+ALTER PROCEDURE payment_schema.add_stripe_customer_creation_status(bigint, character varying)
+    OWNER TO postgres;
+
+CREATE PROCEDURE payment_schema.delete_stripe_customer_creation_status(_user_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM payment_schema.stripe_customer_creation_status
+WHERE user_id = _user_id
+$BODY$;
+ALTER PROCEDURE payment_schema.delete_stripe_customer_creation_status(bigint)
+    OWNER TO postgres;

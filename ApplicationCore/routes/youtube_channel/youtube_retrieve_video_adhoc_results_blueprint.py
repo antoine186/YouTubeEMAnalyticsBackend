@@ -3,8 +3,8 @@ import json
 from app_start_helper import db
 from sqlalchemy import text
 from Utils.json_encoder import GenericJsonEncoder
-from models.previous_video_analysis import PreviousVideoAnalysis
-from models.top_n_emotions import TopNEmotions
+from models.youtube_schema.previous_video_analysis import PreviousVideoAnalysis
+from models.youtube_schema.top_n_emotions import TopNEmotions
 
 youtube_retrieve_video_adhoc_results_blueprint = Blueprint('youtube_retrieve_video_adhoc_results_blueprint', __name__)
 
