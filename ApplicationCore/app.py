@@ -111,7 +111,7 @@ with app.app_context():
     if debug_switched_on:
         if debug_purging_on:
             # Purging on !!! DEBUG ONLY !!!
-            purge_specific_user_by_email('', remote_stripe_entities_purging)
+            purge_specific_user_by_email('antoine186@hotmail.com', remote_stripe_entities_purging)
 
     # DB cleanups on boot up
     youtube_schema_tables_cleanup()

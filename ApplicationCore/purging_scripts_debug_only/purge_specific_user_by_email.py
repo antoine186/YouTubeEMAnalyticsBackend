@@ -83,7 +83,8 @@ def purge_specific_user_by_email(email, delete_remote_stripe_entities):
     stripe_customer_id = db.session.execute(text(get_stripe_customer_id), {'internal_stripe_customer_id': internal_stripe_customer_id[0][0]}).fetchall()
 
     if delete_remote_stripe_entities:
-        stripe.Customer.delete(stripe_customer_id[0][0])
+        if stripe_customer_id[0][0] != None:
+            stripe.Customer.delete(stripe_customer_id[0][0])
 
     delete_stripe_customer_sp = 'CALL payment_schema.delete_stripe_customer(:internal_stripe_customer_id)'
 
@@ -92,6 +93,11 @@ def purge_specific_user_by_email(email, delete_remote_stripe_entities):
 
     delete_analysis_metadata_from_youtube_schema_for_user(user_id[0][0])
     delete_logging_data_for_user_helper(user_id[0][0])
+
+    delete_stripe_customer_creation_status_sp = 'CALL payment_schema.delete_stripe_customer_creation_status(:user_id)'
+
+    db.session.execute(text(delete_stripe_customer_creation_status_sp), {'user_id': user_id[0][0]})
+    db.session.commit()
 
     purge_password_reset_sp = 'CALL user_schema.purge_password_reset()'
     db.session.execute(text(purge_password_reset_sp), 

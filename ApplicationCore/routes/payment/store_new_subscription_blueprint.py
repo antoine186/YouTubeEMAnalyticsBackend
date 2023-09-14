@@ -30,4 +30,9 @@ def store_new_subscription():
                                                                 internal_stripe_customer_id[0][0], 'stripe_subscription_status': payload['subscriptionStatus']})
         db.session.commit()
 
+    delete_stripe_subscription_creation_status_sp = 'CALL payment_schema.delete_stripe_subscription_creation_status(:user_id)'
+
+    db.session.execute(text(delete_stripe_subscription_creation_status_sp), {'user_id': user_id[0][0]})
+    db.session.commit()
+
     return json.dumps(True)

@@ -32,6 +32,16 @@ def subscription_create():
                 stripe.SubscriptionItem.delete(
                     existing_subscription.id,
                 )'''
+        
+        get_user_id = 'SELECT user_schema.get_user_id(:username)'
+
+        user_id = db.session.execute(text(get_user_id), {'username': payload['emailAddress']}).fetchall()
+        
+        add_stripe_subscription_creation_status_sp = 'CALL payment_schema.add_stripe_subscription_creation_status(:user_id,:status)'
+
+        db.session.execute(text(add_stripe_subscription_creation_status_sp), {'user_id': user_id[0][0], 'status': 'true'})
+        db.session.commit()
+
         # Create the subscription. Note we're expanding the Subscription's
         # latest invoice and that invoice's payment_intent
         # so we can pass it to the front end to confirm the payment
@@ -79,6 +89,12 @@ def subscription_create():
                 },
                 "error_message": "" 
             }
+
+        # Commented out because this is handled in storing new subscription
+        #delete_stripe_subscription_creation_status_sp = 'CALL payment_schema.delete_stripe_subscription_creation_status(:user_id)'
+
+        #db.session.execute(text(delete_stripe_subscription_creation_status_sp), {'user_id': user_id[0][0]})
+        #db.session.commit()
 
         response = make_response(json.dumps(operation_response))
         return response

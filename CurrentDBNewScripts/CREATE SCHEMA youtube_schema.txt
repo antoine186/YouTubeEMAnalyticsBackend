@@ -334,3 +334,34 @@ WHERE user_id = _user_id
 $BODY$;
 ALTER PROCEDURE payment_schema.delete_stripe_customer_creation_status(bigint)
     OWNER TO postgres;
+
+CREATE TABLE payment_schema.stripe_subscription_creation_status
+(
+    stripe_subscription_creation_status_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    status character varying(50) NOT NULL,
+    PRIMARY KEY (stripe_subscription_creation_status_id)
+);
+
+ALTER TABLE IF EXISTS payment_schema.stripe_subscription_creation_status
+    OWNER to postgres;
+
+CREATE PROCEDURE payment_schema.add_stripe_subscription_creation_status(_user_id bigint, _status character varying)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO payment_schema.stripe_subscription_creation_status
+(user_id, status)
+VALUES
+(_user_id, _status)
+$BODY$;
+ALTER PROCEDURE payment_schema.add_stripe_subscription_creation_status(bigint, character varying)
+    OWNER TO postgres;
+
+CREATE PROCEDURE payment_schema.delete_stripe_subscription_creation_status(_user_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM payment_schema.stripe_subscription_creation_status
+WHERE user_id = _user_id
+$BODY$;
+ALTER PROCEDURE payment_schema.delete_stripe_subscription_creation_status(bigint)
+    OWNER TO postgres;
