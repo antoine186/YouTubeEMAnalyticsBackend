@@ -30,6 +30,15 @@ def basic_account_create():
         
         db.session.commit()
 
+        get_user_id = 'SELECT user_schema.get_user_id(:username)'
+
+        user_id = db.session.execute(text(get_user_id), {'username': payload['accountCreationData']['emailAddress']}).fetchall()
+
+        add_basic_account_create_stripe_customer_id_status_sp = 'CALL payment_schema.add_basic_account_create_stripe_customer_id_status(:user_id,:status)'
+
+        db.session.execute(text(add_basic_account_create_stripe_customer_id_status_sp), {'user_id': user_id[0][0], 'status': 'true'})
+        db.session.commit()
+
         operation_response = {
             "operation_success": True,
             "error_message": ""

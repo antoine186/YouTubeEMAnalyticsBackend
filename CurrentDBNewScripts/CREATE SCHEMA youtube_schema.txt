@@ -365,3 +365,60 @@ WHERE user_id = _user_id
 $BODY$;
 ALTER PROCEDURE payment_schema.delete_stripe_subscription_creation_status(bigint)
     OWNER TO postgres;
+
+CREATE TABLE payment_schema.basic_account_create_stripe_customer_id_status
+(
+    basic_account_create_stripe_customer_id_status_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    status character varying(50) NOT NULL,
+    PRIMARY KEY (basic_account_create_stripe_customer_id_status_id)
+);
+
+ALTER TABLE IF EXISTS payment_schema.basic_account_create_stripe_customer_id_status
+    OWNER to postgres;
+
+ALTER TABLE IF EXISTS payment_schema.basic_account_create_stripe_customer_id_status
+    ALTER COLUMN basic_account_create_stripe_customer_id_status_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+
+ALTER TABLE IF EXISTS payment_schema.basic_account_create_stripe_customer_id_status
+    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES user_schema."user" (user_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+CREATE INDEX IF NOT EXISTS fki_user_id_fkey
+    ON payment_schema.basic_account_create_stripe_customer_id_status(user_id);
+
+CREATE PROCEDURE payment_schema.add_basic_account_create_stripe_customer_id_status(_user_id bigint, _status character varying)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO payment_schema.basic_account_create_stripe_customer_id_status
+(user_id, status)
+VALUES
+(_user_id, _status)
+$BODY$;
+ALTER PROCEDURE payment_schema.add_basic_account_create_stripe_customer_id_status(bigint, character varying)
+    OWNER TO postgres;
+
+CREATE PROCEDURE payment_schema.delete_basic_account_create_stripe_customer_id_status(_user_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM payment_schema.basic_account_create_stripe_customer_id_status
+WHERE
+user_id = _user_id
+$BODY$;
+ALTER PROCEDURE payment_schema.delete_basic_account_create_stripe_customer_id_status(bigint)
+    OWNER TO postgres;
+
+CREATE FUNCTION payment_schema.check_basic_account_create_stripe_customer_id_status(_user_id bigint)
+    RETURNS bigint
+    LANGUAGE 'sql'
+    
+AS $BODY$
+SELECT basic_account_create_stripe_customer_id_status_id
+FROM payment_schema.basic_account_create_stripe_customer_id_status
+WHERE user_id = _user_id
+$BODY$;
+
+ALTER FUNCTION payment_schema.check_basic_account_create_stripe_customer_id_status(bigint)
+    OWNER TO postgres;

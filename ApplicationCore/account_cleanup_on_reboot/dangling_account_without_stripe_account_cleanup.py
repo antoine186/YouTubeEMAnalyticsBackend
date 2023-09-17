@@ -1,3 +1,4 @@
+from models.payment_schema.basic_account_create_stripe_customer_id_status import BasicAccountCreateStripeCustomerIdStatus
 
 def dangling_account_without_stripe_account_cleanup():
-    #
+    all_dangling_accounts_without_stripe_ids = BasicAccountCreateStripeCustomerIdStatus.query.all()

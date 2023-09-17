@@ -17,6 +17,7 @@ def stripe_customer_create():
     payload = json.loads(payload)
 
     try:
+        # Commented out because don't need this as it's cleaned up in stripe_customer_shallow_remote_cleanup()
         #check_stripe_customer_creation_status = 'SELECT payment_schema.check_stripe_customer_creation_status(:user_id)'
         #stripe_customer_creation_status_id = db.session.execute(text(check_stripe_customer_creation_status), {'user_id': user_id[0][0]}).fetchall()
 
@@ -46,6 +47,11 @@ def stripe_customer_create():
         delete_stripe_customer_creation_status_sp = 'CALL payment_schema.delete_stripe_customer_creation_status(:user_id)'
 
         db.session.execute(text(delete_stripe_customer_creation_status_sp), {'user_id': user_id[0][0]})
+        db.session.commit()
+
+        delete_basic_account_create_stripe_customer_id_status_sp = 'CALL payment_schema.delete_basic_account_create_stripe_customer_id_status(:user_id)'
+
+        db.session.execute(text(delete_basic_account_create_stripe_customer_id_status_sp), {'user_id': user_id[0][0]})
         db.session.commit()
 
         operation_response = {
