@@ -32,12 +32,7 @@ def dangling_account_without_stripe_account_cleanup():
             db.session.execute(text(delete_stripe_subscription_creation_status_sp), {'user_id': all_dangling_accounts_without_stripe_id.user_id})
             db.session.commit()
 
-            delete_basic_account_create_stripe_customer_id_status_sp = 'CALL payment_schema.delete_basic_account_create_stripe_customer_id_status(:user_id)'
-
-            db.session.execute(text(delete_basic_account_create_stripe_customer_id_status_sp), {'user_id': all_dangling_accounts_without_stripe_id.user_id})
-            db.session.commit()
-
-            get_internal_stripe_customer_id = 'SELECT user_schema.get_internal_stripe_customer_id(:user_id)'
+            get_internal_stripe_customer_id = 'SELECT payment_schema.get_internal_stripe_customer_id(:user_id)'
             internal_stripe_customer_id = db.session.execute(text(get_internal_stripe_customer_id), {'user_id': all_dangling_accounts_without_stripe_id.user_id}).fetchall()
 
             # Can simply delete subscription in backend because deleting the stripe customer will delete the corresponding subscriptions
@@ -74,7 +69,14 @@ def dangling_account_without_stripe_account_cleanup():
             db.session.execute(text(delete_all_user_sessions_sp), {'user_id': all_dangling_accounts_without_stripe_id.user_id})
             db.session.commit()
 
+            left_over_user_id = all_dangling_accounts_without_stripe_id.user_id
+
+            delete_basic_account_create_stripe_customer_id_status_sp = 'CALL payment_schema.delete_basic_account_create_stripe_customer_id_status(:user_id)'
+
+            db.session.execute(text(delete_basic_account_create_stripe_customer_id_status_sp), {'user_id': all_dangling_accounts_without_stripe_id.user_id})
+            db.session.commit()
+
             delete_user_sp = 'CALL user_schema.delete_user(:user_id)'
 
-            db.session.execute(text(delete_user_sp), {'user_id': all_dangling_accounts_without_stripe_id.user_id})
+            db.session.execute(text(delete_user_sp), {'user_id': left_over_user_id})
             db.session.commit()

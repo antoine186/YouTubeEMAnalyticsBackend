@@ -84,11 +84,14 @@ def purge_specific_user_by_email(email, delete_remote_stripe_entities):
 
     if delete_remote_stripe_entities:
         if stripe_customer_id[0][0] != None:
-            stripe.Customer.delete(stripe_customer_id[0][0])
+            try:
+                stripe.Customer.delete(stripe_customer_id[0][0])
+            except Exception as e:
+                pass
 
-    delete_stripe_customer_sp = 'CALL payment_schema.delete_stripe_customer(:internal_stripe_customer_id)'
+    delete_stripe_customer_sp = 'CALL payment_schema.delete_stripe_customer(:user_id)'
 
-    db.session.execute(text(delete_stripe_customer_sp), {'internal_stripe_customer_id': internal_stripe_customer_id[0][0]})
+    db.session.execute(text(delete_stripe_customer_sp), {'user_id': user_id[0][0]})
     db.session.commit()
 
     delete_analysis_metadata_from_youtube_schema_for_user(user_id[0][0])

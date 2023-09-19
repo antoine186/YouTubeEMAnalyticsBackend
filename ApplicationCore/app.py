@@ -11,7 +11,7 @@ from db_cleanup_on_reboot.user_schema_tables_cleanup import user_schema_tables_c
 from purging_scripts_debug_only.purge_specific_user_by_email import purge_specific_user_by_email
 from stripe_cleanup_on_reboot.stripe_customer_shallow_remote_cleanup import stripe_customer_shallow_remote_cleanup
 
-from app_start_helper import app, db, debug_switched_on, debug_purging_on, remote_stripe_entities_purging
+from app_start_helper import app, db, debug_switched_on, debug_purging_on, remote_stripe_entities_purging, purge_dangling_accounts_without_stripe_id
 from main_pages.main_page_blueprint import main_page_blueprint
 from authentication.authentication_blueprint import authentication_blueprint
 from authentication.session_authentication_blueprint import session_authentication_blueprint
@@ -55,6 +55,7 @@ from youtube_channel.youtube_video_adhoc_analyse_blueprint import youtube_video_
 from youtube_channel.youtube_retrieve_video_adhoc_results_blueprint import youtube_retrieve_video_adhoc_results_blueprint
 from authentication.remove_session_blueprint import remove_session_blueprint
 from server.check_if_server_up_blueprint import check_if_server_up_blueprint
+from account_cleanup_on_reboot.dangling_account_without_stripe_account_cleanup import dangling_account_without_stripe_account_cleanup
 
 # app.register_blueprint(user_bp, url_prefix='/users')
 app.register_blueprint(main_page_blueprint)
@@ -104,9 +105,12 @@ app.register_blueprint(check_if_server_up_blueprint)
 with app.app_context():
     db.init_app(app)
 
-    if remote_stripe_entities_purging:
+    if remote_stripe_entities_purging and not purge_dangling_accounts_without_stripe_id:
         # DB and remote Stripe cleanup on boot up
         stripe_customer_shallow_remote_cleanup()
+
+    if purge_dangling_accounts_without_stripe_id:
+        dangling_account_without_stripe_account_cleanup()
 
     if debug_switched_on:
         if debug_purging_on:

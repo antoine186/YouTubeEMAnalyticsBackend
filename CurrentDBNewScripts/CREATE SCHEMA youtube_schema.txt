@@ -346,6 +346,9 @@ CREATE TABLE payment_schema.stripe_subscription_creation_status
 ALTER TABLE IF EXISTS payment_schema.stripe_subscription_creation_status
     OWNER to postgres;
 
+ALTER TABLE IF EXISTS payment_schema.stripe_subscription_creation_status
+    ALTER COLUMN stripe_subscription_creation_status_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+
 CREATE PROCEDURE payment_schema.add_stripe_subscription_creation_status(_user_id bigint, _status character varying)
 LANGUAGE 'sql'
 AS $BODY$

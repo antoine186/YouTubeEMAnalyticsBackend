@@ -9,6 +9,8 @@ def stripe_customer_shallow_remote_cleanup():
     """This has to run before purge_specific_user_by_email()
     
     This function is to purge an entire stripe customer when creation was halted halfway
+
+    This is a shallow version of dangling_account_without_stripe_account_cleanup()
     """
     all_unfinished_stripe_customer_creations = StripeCustomerCreationStatus.query.all()
 
