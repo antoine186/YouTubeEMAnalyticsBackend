@@ -52,7 +52,7 @@ def stripe_customer_create():
         delete_basic_account_create_stripe_customer_id_status_sp = 'CALL payment_schema.delete_basic_account_create_stripe_customer_id_status(:user_id)'
 
         db.session.execute(text(delete_basic_account_create_stripe_customer_id_status_sp), {'user_id': user_id[0][0]})
-        db.session.commit()
+        db.session.commit() 
 
         operation_response = {
             "operation_success": True,

@@ -38,6 +38,7 @@ def stripe_customer_shallow_remote_cleanup():
             get_internal_stripe_customer_id = 'SELECT user_schema.get_internal_stripe_customer_id(:user_id)'
             internal_stripe_customer_id = db.session.execute(text(get_internal_stripe_customer_id), {'user_id': unfinished_stripe_customer_creation.user_id}).fetchall()
 
+            # Can simply delete subscription in backend because deleting the stripe customer will delete the corresponding subscriptions
             if internal_stripe_customer_id[0][0] != None:
                 delete_subscription_sp = 'CALL payment_schema.delete_subscription(:internal_stripe_customer_id)'
 

@@ -1,0 +1,12 @@
+SELECT * FROM youtube_schema.comment_emo_breakdown
+SELECT * FROM youtube_schema.previous_channel_analysis
+SELECT * FROM youtube_schema.previous_video_analysis
+SELECT * FROM youtube_schema.previous_video_analysis_latest_date
+SELECT * FROM youtube_schema.top_n_emotions
+SELECT * FROM youtube_schema.video_analysis_loading_status
+
+DELETE FROM youtube_schema.top_n_emotions
+DELETE FROM youtube_schema.previous_video_analysis_latest_date
+DELETE FROM youtube_schema.video_analysis_loading_status
+DELETE FROM youtube_schema.comment_emo_breakdown
+DELETE FROM youtube_schema.previous_video_analysis
