@@ -26,6 +26,11 @@ def delete_account():
         db.session.execute(text(delete_basic_account_create_stripe_customer_id_status_sp), {'user_id': user_id[0][0]})
         db.session.commit()
 
+        delete_stripe_customer_sp = 'CALL payment_schema.delete_stripe_customer(:user_id)'
+
+        db.session.execute(text(delete_stripe_customer_sp), {'user_id': user_id[0][0]})
+        db.session.commit()
+
         delete_address_sp = 'CALL user_schema.delete_address(:user_id)'
 
         db.session.execute(text(delete_address_sp), {'user_id': user_id[0][0]})
