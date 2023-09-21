@@ -48,5 +48,5 @@ def delete_account():
         db.session.commit()
 
         return json.dumps(True)
-    except Exception:
-        pass
+    except Exception as e:
+        return json.dumps(False)
