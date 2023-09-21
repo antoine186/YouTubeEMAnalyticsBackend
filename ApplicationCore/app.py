@@ -7,7 +7,6 @@ from scheduled_jobs.error_logs_purge import error_logs_purge
 from scheduled_jobs.apscheduler_start_cleanup import apscheduler_start_cleanup
 from db_cleanup_on_reboot.youtube_schema_tables_cleanup import youtube_schema_tables_cleanup
 from db_cleanup_on_reboot.user_schema_tables_cleanup import user_schema_tables_cleanup
-#from scheduled_jobs.tagging_update import tagging_update
 from purging_scripts_debug_only.purge_specific_user_by_email import purge_specific_user_by_email
 from stripe_cleanup_on_reboot.stripe_customer_shallow_remote_cleanup import stripe_customer_shallow_remote_cleanup
 
@@ -15,7 +14,6 @@ from app_start_helper import app, db, debug_switched_on, debug_purging_on, remot
 from main_pages.main_page_blueprint import main_page_blueprint
 from authentication.authentication_blueprint import authentication_blueprint
 from authentication.session_authentication_blueprint import session_authentication_blueprint
-#from search.emo_search_blueprint import emo_search_blueprint
 from account_data.basic_account_creation_blueprint import basic_account_creation_blueprint
 from payment.stripe_customer_creation_blueprint import stripe_customer_creation_blueprint
 from payment.subscription_creation_blueprint import subscription_creation_blueprint
@@ -32,21 +30,7 @@ from payment.delete_subscription_blueprint import delete_subscription_blueprint
 from authentication.forgot_password_blueprint import forgot_password_blueprint
 from authentication.password_reset_blueprint import password_reset_blueprint
 from search.get_previous_search_result_blueprint import get_previous_search_result_blueprint
-#from search.tagging_search_blueprint import tagging_search_blueprint
-#from search.get_tagging_inputs_blueprint import get_tagging_inputs_blueprint
-#from search.save_tagging_inputs_blueprint import save_tagging_inputs_blueprint
-#from search.update_tagging_inputs_blueprint import update_tagging_inputs_blueprint
-#from search.get_previous_tagging_result_blueprint import get_previous_tagging_result_blueprint
-#from search.delete_tag_blueprint import delete_tag_blueprint
-#from search.delete_tagging_inputs_blueprint import delete_tagging_inputs_blueprint
-#from search.progression_charting_blueprint import progression_charting_blueprint
-#from search.get_previous_charting_blueprint import get_previous_charting_blueprint
-#from search.linking_blueprint import linking_blueprint
-#from search.get_previous_linking_blueprint import get_previous_linking_blueprint
 from payment.create_checkout_blueprint import create_checkout_blueprint
-#from search.check_still_searching_blueprint import check_still_searching_blueprint
-#from search.check_still_charting_blueprint import check_still_charting_blueprint
-#from search.tweet_emo_mine_blueprint import tweet_emo_mine_blueprint
 from youtube_channel.youtube_analyse_blueprint import youtube_analyse_blueprint
 from youtube_channel.youtube_retrieve_channel_results_blueprint import youtube_retrieve_channel_results_blueprint
 from youtube_channel.comments_llm_questioning_blueprint import comments_llm_questioning_blueprint
@@ -57,11 +41,9 @@ from authentication.remove_session_blueprint import remove_session_blueprint
 from server.check_if_server_up_blueprint import check_if_server_up_blueprint
 from account_cleanup_on_reboot.dangling_account_without_stripe_account_cleanup import dangling_account_without_stripe_account_cleanup
 
-# app.register_blueprint(user_bp, url_prefix='/users')
 app.register_blueprint(main_page_blueprint)
 app.register_blueprint(authentication_blueprint)
 app.register_blueprint(session_authentication_blueprint)
-#app.register_blueprint(emo_search_blueprint)
 app.register_blueprint(basic_account_creation_blueprint)
 app.register_blueprint(stripe_customer_creation_blueprint)
 app.register_blueprint(subscription_creation_blueprint)
@@ -72,27 +54,12 @@ app.register_blueprint(update_subscription_status_blueprint)
 app.register_blueprint(delete_account_blueprint)
 app.register_blueprint(retrieve_subscription_details_blueprint)
 app.register_blueprint(retrieve_account_data_blueprint)
-#app.register_blueprint(setupintent_creation_blueprint)
 app.register_blueprint(get_stripe_customer_id_blueprint)
 app.register_blueprint(delete_subscription_blueprint)
 app.register_blueprint(forgot_password_blueprint)
 app.register_blueprint(password_reset_blueprint)
 app.register_blueprint(get_previous_search_result_blueprint)
-#app.register_blueprint(tagging_search_blueprint)
-#app.register_blueprint(get_tagging_inputs_blueprint)
-#app.register_blueprint(save_tagging_inputs_blueprint)
-#app.register_blueprint(update_tagging_inputs_blueprint)
-#app.register_blueprint(get_previous_tagging_result_blueprint)
-#app.register_blueprint(delete_tag_blueprint)
-#app.register_blueprint(delete_tagging_inputs_blueprint)
-#app.register_blueprint(progression_charting_blueprint)
-#app.register_blueprint(get_previous_charting_blueprint)
-#app.register_blueprint(linking_blueprint)
-#app.register_blueprint(get_previous_linking_blueprint)
 app.register_blueprint(create_checkout_blueprint)
-#app.register_blueprint(check_still_searching_blueprint)
-#app.register_blueprint(check_still_charting_blueprint)
-#app.register_blueprint(tweet_emo_mine_blueprint)
 app.register_blueprint(youtube_analyse_blueprint)
 app.register_blueprint(youtube_retrieve_channel_results_blueprint)
 app.register_blueprint(comments_llm_questioning_blueprint)
@@ -115,6 +82,7 @@ with app.app_context():
     if debug_switched_on:
         if debug_purging_on:
             # Purging on !!! DEBUG ONLY !!!
+            # Set email to '' if there is nothing to purge
             purge_specific_user_by_email('antoine186@hotmail.com', remote_stripe_entities_purging)
 
     # DB cleanups on boot up

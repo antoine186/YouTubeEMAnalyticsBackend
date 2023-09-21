@@ -88,6 +88,14 @@ def purge_specific_user_by_email(email, delete_remote_stripe_entities):
                 stripe.Customer.delete(stripe_customer_id[0][0])
             except Exception as e:
                 pass
+        else:
+            stripe_customer_search_result = stripe.Customer.search(
+                query="email:'{}'".format(email),
+            )
+
+            if len(stripe_customer_search_result._last_response.data['data']) > 0:
+                existing_stripe_customer_id = stripe_customer_search_result._last_response.data['data'][0]['id']
+                stripe.Customer.delete(existing_stripe_customer_id)
 
     delete_stripe_customer_sp = 'CALL payment_schema.delete_stripe_customer(:user_id)'
 

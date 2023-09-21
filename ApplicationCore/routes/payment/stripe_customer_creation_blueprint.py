@@ -65,6 +65,26 @@ def stripe_customer_create():
         return response
    
     except Exception as e:
+        # Delete stripe_customer_creation_status
+
+        # Delete stripe customer entity on the web
+        try:
+            stripe_customer_search_result = stripe.Customer.search(
+                    query="email:'{}'".format(payload['accountCreationData']['emailAddress']),
+                )
+        except Exception:
+            pass
+
+        if len(stripe_customer_search_result._last_response.data['data']) > 0:
+            existing_stripe_customer_id = stripe_customer_search_result._last_response.data['data'][0]['id']
+            stripe.Customer.delete(existing_stripe_customer_id)
+
+        # Delete stripe customer
+
+        # Delete basic account details
+
+        # Delete basic account create stripe customer id status
+
         operation_response = {
             "operation_success": False,
             "responsePayload": {
