@@ -14,7 +14,7 @@ import cohere
 from apiclient.discovery import build
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_object('ApplicationCore.config')
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465

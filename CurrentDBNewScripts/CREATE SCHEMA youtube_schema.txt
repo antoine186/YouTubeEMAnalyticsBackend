@@ -425,3 +425,6 @@ $BODY$;
 
 ALTER FUNCTION payment_schema.check_basic_account_create_stripe_customer_id_status(bigint)
     OWNER TO postgres;
+
+CREATE SCHEMA logging_schema
+    AUTHORIZATION postgres;
