@@ -36,6 +36,11 @@ def subscription_create():
         get_user_id = 'SELECT user_schema.get_user_id(:username)'
 
         user_id = db.session.execute(text(get_user_id), {'username': payload['emailAddress']}).fetchall()
+
+        delete_stripe_subscription_creation_status_sp = 'CALL payment_schema.delete_stripe_subscription_creation_status(:user_id)'
+
+        db.session.execute(text(delete_stripe_subscription_creation_status_sp), {'user_id': user_id[0][0]})
+        db.session.commit()
         
         add_stripe_subscription_creation_status_sp = 'CALL payment_schema.add_stripe_subscription_creation_status(:user_id,:status)'
 

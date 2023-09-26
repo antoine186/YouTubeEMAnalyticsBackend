@@ -18,6 +18,17 @@ def login():
     try:
         user_safe_view = UserSafeView.query.filter_by(username = payload['username']).first()
 
+        if user_safe_view == None:
+            operation_response = {
+                "operation_success": False,
+                "responsePayload": {
+                },
+                "error_message": "account_not_found"
+            }
+            response = make_response(json.dumps(operation_response))
+
+            return response
+
         if login_logging_table_status_turned_on:
             count_number_of_entries_in_login_logging_table = 'SELECT logging_schema.count_number_of_entries_in_login_logging_table()'
             number_of_entries_in_login_logging = db.session.execute(text(count_number_of_entries_in_login_logging_table), {}).fetchall()
