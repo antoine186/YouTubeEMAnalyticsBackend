@@ -8,6 +8,7 @@ from flask import Blueprint, request, make_response
 import json
 from app_start_helper import db
 from sqlalchemy import text
+from Utils.cleanup_utils.subscription_halted_creation_cleanup_for_user import subscription_halted_creation_cleanup_for_user
 
 subscription_creation_blueprint = Blueprint('subscription_creation_blueprint', __name__)
 
@@ -37,11 +38,15 @@ def subscription_create():
 
         user_id = db.session.execute(text(get_user_id), {'username': payload['emailAddress']}).fetchall()
 
+        """
         delete_stripe_subscription_creation_status_sp = 'CALL payment_schema.delete_stripe_subscription_creation_status(:user_id)'
 
         db.session.execute(text(delete_stripe_subscription_creation_status_sp), {'user_id': user_id[0][0]})
         db.session.commit()
-        
+        """
+
+        subscription_halted_creation_cleanup_for_user(user_id[0][0])
+
         add_stripe_subscription_creation_status_sp = 'CALL payment_schema.add_stripe_subscription_creation_status(:user_id,:status)'
 
         db.session.execute(text(add_stripe_subscription_creation_status_sp), {'user_id': user_id[0][0], 'status': 'true'})

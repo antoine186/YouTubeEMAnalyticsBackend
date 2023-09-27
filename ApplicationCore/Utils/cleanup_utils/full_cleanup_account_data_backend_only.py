@@ -2,6 +2,9 @@ from app_start_helper import db
 from sqlalchemy import text
 
 def full_cleanup_account_data_backend_only(user_id, wipe_session_data, wipe_stripe_data, wipe_subscription_data):
+    """
+    DONT USE, Currently not part of the testing suite
+    """
     # Delete entire account on backend
     # Delete from payment schema
     if wipe_stripe_data:
