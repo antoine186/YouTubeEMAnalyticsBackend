@@ -17,23 +17,14 @@ def subscription_halted_creation_cleanup_on_reboot():
         )
 
         if len(stripe_customer_search_result._last_response.data['data']) > 0:
-            subscription_mini_list_for_user = stripe.Subscription.list(customer=stripe_customer_search_result._last_response.data['data'][0]['id'], limit=1)
+            subscription_mini_list_for_user = stripe.Subscription.list(customer=stripe_customer_search_result._last_response.data['data'][0]['id'], limit=100)
 
-            if len(subscription_mini_list_for_user._last_response.data['data']) > 0:
-                for subscription_data in subscription_mini_list_for_user._last_response.data['data']:
-                    if subscription_data['status'] != 'active' and subscription_data['status'] != 'trialing':
-                        stripe.Subscription.cancel(subscription_data['id'])
+            for subscription_data in subscription_mini_list_for_user.auto_paging_iter():
+                if subscription_data['status'] != 'active' and subscription_data['status'] != 'trialing':
+                    stripe.Subscription.cancel(subscription_data['id'])
 
+    for unfinished_stripe_subscription_creation in all_unfinished_stripe_subscription_creations:
         delete_stripe_subscription_creation_status_sp = 'CALL payment_schema.delete_stripe_subscription_creation_status(:user_id)'
 
         db.session.execute(text(delete_stripe_subscription_creation_status_sp), {'user_id': unfinished_stripe_subscription_creation.user_id})
         db.session.commit()
-
-
-    """
-    for unfinished_stripe_subscription_creation in all_unfinished_stripe_subscription_creations:
-        delete_stripe_subscription_creation_status_sp = 'CALL payment_schema.delete_stripe_subscription_creation_status(:user_id)'
-
-        db.session.execute(text(delete_stripe_subscription_creation_status_sp), {'user_id': user_id[0][0]})
-        db.session.commit()
-    """
