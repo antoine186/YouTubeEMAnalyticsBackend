@@ -40,4 +40,4 @@ def store_new_subscription():
         return json.dumps(True)
     
     except Exception as e:
-        pass
+        return json.dumps(False)
