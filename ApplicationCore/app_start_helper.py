@@ -90,3 +90,4 @@ number_of_comments_in_tranch_to_generate_video_description = 10
 debug_purging_on = debug_switched_on
 remote_stripe_entities_purging = True
 purge_dangling_accounts_without_stripe_id = True
+remote_purge_halted_subscriptions = True

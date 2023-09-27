@@ -9,8 +9,10 @@ from db_cleanup_on_reboot.youtube_schema_tables_cleanup import youtube_schema_ta
 from db_cleanup_on_reboot.user_schema_tables_cleanup import user_schema_tables_cleanup
 from purging_scripts_debug_only.purge_specific_user_by_email import purge_specific_user_by_email
 from stripe_cleanup_on_reboot.stripe_customer_shallow_remote_cleanup import stripe_customer_shallow_remote_cleanup
+from subscription_cleanup_on_reboot.subscription_halted_creation_cleanup_on_reboot import subscription_halted_creation_cleanup_on_reboot
 
-from app_start_helper import app, db, debug_switched_on, debug_purging_on, remote_stripe_entities_purging, purge_dangling_accounts_without_stripe_id
+from app_start_helper import app, db, debug_switched_on, debug_purging_on, remote_stripe_entities_purging, purge_dangling_accounts_without_stripe_id, \
+    remote_purge_halted_subscriptions
 from main_pages.main_page_blueprint import main_page_blueprint
 from authentication.authentication_blueprint import authentication_blueprint
 from authentication.session_authentication_blueprint import session_authentication_blueprint
@@ -71,6 +73,9 @@ app.register_blueprint(check_if_server_up_blueprint)
 
 with app.app_context():
     db.init_app(app)
+
+    if remote_purge_halted_subscriptions:
+        subscription_halted_creation_cleanup_on_reboot()
 
     if remote_stripe_entities_purging and not purge_dangling_accounts_without_stripe_id:
         # DB and remote Stripe cleanup on boot up
