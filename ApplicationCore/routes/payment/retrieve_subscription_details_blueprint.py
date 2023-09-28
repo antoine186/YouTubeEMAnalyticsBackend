@@ -27,35 +27,56 @@ def retrieve_subscription_details():
 
         stripe_subscription_id = db.session.execute(text(get_stripe_subscription_id), {'internal_stripe_customer_id': internal_stripe_customer_id[0][0]}).fetchall()
 
-        retrieved_subscription = stripe.Subscription.retrieve(
-            stripe_subscription_id[0][0],
-        )
+        if stripe_subscription_id[0][0] != None:
+            retrieved_subscription = stripe.Subscription.retrieve(
+                stripe_subscription_id[0][0],
+            )
 
-        if retrieved_subscription.status != 'active':
-            delete_subscription_sp = 'CALL payment_schema.delete_subscription(:internal_stripe_customer_id)'
-            db.session.execute(text(delete_subscription_sp), {'internal_stripe_customer_id': internal_stripe_customer_id[0][0]})
+            if retrieved_subscription.status != 'active' and retrieved_subscription.status != 'trialing':
+                delete_subscription_sp = 'CALL payment_schema.delete_subscription(:internal_stripe_customer_id)'
+                db.session.execute(text(delete_subscription_sp), {'internal_stripe_customer_id': internal_stripe_customer_id[0][0]})
 
-            db.session.commit()
+                db.session.commit()
 
-        latest_invoice = stripe.Invoice.retrieve(
-            retrieved_subscription.latest_invoice,
-        )
+            latest_invoice = stripe.Invoice.retrieve(
+                retrieved_subscription.latest_invoice,
+            )
 
-        payment_intent = stripe.PaymentIntent.retrieve(
-            latest_invoice.payment_intent,
-        )
+            if latest_invoice.payment_intent != None:
+                payment_or_setup_intent = stripe.PaymentIntent.retrieve(
+                    latest_invoice.payment_intent,
+                )
+            else:
+                get_stripe_subscription_client_secret = 'SELECT payment_schema.get_stripe_subscription_client_secret(:user_id)'
+                stripe_subscription_client_secret = db.session.execute(text(get_stripe_subscription_client_secret), {'user_id': user_id[0][0]}).fetchall()
 
-        operation_response = {
-            "operation_success": True,
-            "responsePayload": {
-                "stripe_subscription_id": retrieved_subscription.id,
-                "client_secret": payment_intent.client_secret,
-                "subscription_status": retrieved_subscription.status
-            },
-            "error_message": "" 
-        }
-        response = make_response(json.dumps(operation_response))
-        return response
+                stripe_subscription_client_secret_list = stripe_subscription_client_secret[0][0].split("_secret_")
+
+                payment_or_setup_intent = stripe.SetupIntent.retrieve(
+                    stripe_subscription_client_secret_list[0],
+                )
+
+            operation_response = {
+                "operation_success": True,
+                "responsePayload": {
+                    "stripe_subscription_id": retrieved_subscription.id,
+                    "client_secret": payment_or_setup_intent.client_secret,
+                    "subscription_status": retrieved_subscription.status
+                },
+                "error_message": "" 
+            }
+            response = make_response(json.dumps(operation_response))
+            return response
+        else:
+            operation_response = {
+                "operation_success": False,
+                "responsePayload": {
+                },
+                "error_message": "no_subscription_found" 
+            }
+            response = make_response(json.dumps(operation_response))
+            return response
+    
     except Exception as e:
         operation_response = {
             "operation_success": False,

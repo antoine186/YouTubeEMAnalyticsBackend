@@ -1,430 +1,58 @@
-CREATE TABLE youtube_schema.video_approximated_description
+CREATE TABLE payment_schema.stripe_subscription_client_secret
 (
-    video_approximated_description_id bigint NOT NULL,
-    previous_video_analysis_id bigint NOT NULL,
-    approximated_video_description text NOT NULL,
-    PRIMARY KEY (video_approximated_description_id)
-);
-
-ALTER TABLE IF EXISTS youtube_schema.video_approximated_description
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.video_approximated_description
-    ALTER COLUMN video_approximated_description_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-ALTER TABLE IF EXISTS youtube_schema.video_approximated_description
-    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
-    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
-    ON youtube_schema.video_approximated_description(previous_video_analysis_id);
-
-CREATE PROCEDURE youtube_schema.add_video_approximated_description(_previous_video_analysis_id bigint, _approximated_video_description text)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.video_approximated_description
-(previous_video_analysis_id, approximated_video_description)
-VALUES
-(_previous_video_analysis_id, _approximated_video_description)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_video_approximated_description(bigint, text)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.update_video_approximated_description(_approximated_video_description text, _previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-UPDATE youtube_schema.video_approximated_description
-SET approximated_video_description = _approximated_video_description
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.update_video_approximated_description(text, bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.delete_video_approximated_description(_previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.video_approximated_description
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_video_approximated_description(bigint)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.check_video_approximated_description(_previous_video_analysis_id bigint)
-    RETURNS bigint
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT video_approximated_description_id
-FROM youtube_schema.video_approximated_description
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.check_video_approximated_description(bigint)
-    OWNER TO postgres;
-
-CREATE TABLE youtube_schema.video_not_enough_comments
-(
-    video_not_enough_comments_id bigint NOT NULL,
-    previous_video_analysis_id bigint NOT NULL,
-    not_enough_comments character varying(25) NOT NULL,
-    PRIMARY KEY (video_not_enough_comments_id)
-);
-
-ALTER TABLE IF EXISTS youtube_schema.video_not_enough_comments
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.video_not_enough_comments
-    ALTER COLUMN video_not_enough_comments_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-ALTER TABLE IF EXISTS youtube_schema.video_not_enough_comments
-    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
-    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
-    ON youtube_schema.video_not_enough_comments(previous_video_analysis_id);
-
-CREATE FUNCTION youtube_schema.check_not_enough_comments(_previous_video_analysis_id bigint)
-    RETURNS bigint
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT video_not_enough_comments_id 
-FROM youtube_schema.video_not_enough_comments
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.check_not_enough_comments(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.add_not_enough_comments_status(_previous_video_analysis_id bigint, _not_enough_comments character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.video_not_enough_comments
-(previous_video_analysis_id, not_enough_comments)
-VALUES
-(_previous_video_analysis_id, _not_enough_comments)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_not_enough_comments_status(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.update_not_enough_comments_status(_video_not_enough_comments_id bigint, _not_enough_comments character varying)
-LANGUAGE 'sql'
-AS $BODY$
-UPDATE youtube_schema.video_not_enough_comments
-SET not_enough_comments = _not_enough_comments
-WHERE video_not_enough_comments_id = _video_not_enough_comments_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.update_not_enough_comments_status(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.get_video_approximated_description(_video_approximated_description_id bigint)
-    RETURNS text
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT approximated_video_description
-FROM youtube_schema.video_approximated_description
-WHERE video_approximated_description_id = _video_approximated_description_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.get_video_approximated_description(bigint)
-    OWNER TO postgres;
-
-CREATE TABLE youtube_schema.who_are_viewers_approximated
-(
-    who_are_viewers_approximated_id bigint NOT NULL,
-    previous_video_analysis_id bigint NOT NULL,
-    who_are_viewers_approximated text NOT NULL,
-    PRIMARY KEY (who_are_viewers_approximated_id)
-);
-
-ALTER TABLE IF EXISTS youtube_schema.who_are_viewers_approximated
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS youtube_schema.who_are_viewers_approximated
-    ADD CONSTRAINT previous_video_analysis_id_fkey FOREIGN KEY (previous_video_analysis_id)
-    REFERENCES youtube_schema.previous_video_analysis (previous_video_analysis_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_previous_video_analysis_id_fkey
-    ON youtube_schema.who_are_viewers_approximated(previous_video_analysis_id);
-
-ALTER TABLE IF EXISTS youtube_schema.who_are_viewers_approximated
-    ALTER COLUMN who_are_viewers_approximated_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-CREATE FUNCTION youtube_schema.check_who_are_viewers_approximated(_previous_video_analysis_id bigint)
-    RETURNS bigint
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT who_are_viewers_approximated_id
-FROM youtube_schema.who_are_viewers_approximated
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.check_who_are_viewers_approximated(bigint)
-    OWNER TO postgres;
-
-CREATE FUNCTION youtube_schema.get_who_are_viewers_approximated(_who_are_viewers_approximated_id bigint)
-    RETURNS text
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT who_are_viewers_approximated
-FROM youtube_schema.who_are_viewers_approximated
-WHERE who_are_viewers_approximated_id = _who_are_viewers_approximated_id
-$BODY$;
-
-ALTER FUNCTION youtube_schema.get_who_are_viewers_approximated(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.add_who_are_viewers_approximated(_previous_video_analysis_id bigint, _who_are_viewers_approximated text)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO youtube_schema.who_are_viewers_approximated
-(previous_video_analysis_id, who_are_viewers_approximated)
-VALUES
-(_previous_video_analysis_id, _who_are_viewers_approximated)
-$BODY$;
-ALTER PROCEDURE youtube_schema.add_who_are_viewers_approximated(bigint, text)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.update_who_are_viewers_approximated(_who_are_viewers_approximated text, _previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-UPDATE youtube_schema.who_are_viewers_approximated
-SET who_are_viewers_approximated = _who_are_viewers_approximated
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.update_who_are_viewers_approximated(text, bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.delete_who_are_viewers_approximated(_previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.who_are_viewers_approximated
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_who_are_viewers_approximated(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.delete_latest_video_analysis_date(_previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.previous_video_analysis_latest_date
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_latest_video_analysis_date(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.delete_video_analysis_status(_previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.video_analysis_loading_status
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_video_analysis_status(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE youtube_schema.delete_video_not_enough_comments_status(_previous_video_analysis_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM youtube_schema.video_not_enough_comments
-WHERE previous_video_analysis_id = _previous_video_analysis_id
-$BODY$;
-ALTER PROCEDURE youtube_schema.delete_video_not_enough_comments_status(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE user_schema.purge_password_reset()
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM user_schema.password_reset
-$BODY$;
-ALTER PROCEDURE user_schema.purge_password_reset()
-    OWNER TO postgres;
-
-CREATE PROCEDURE user_schema.purge_user_session()
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM user_schema.user_session
-$BODY$;
-ALTER PROCEDURE user_schema.purge_user_session()
-    OWNER TO postgres;
-
-CREATE FUNCTION user_schema.count_password_reset_tokens_for_user(_user_id bigint)
-    RETURNS integer
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT COUNT(password_reset_id) 
-FROM user_schema.password_reset 
-WHERE user_id = _user_id
-$BODY$;
-
-ALTER FUNCTION user_schema.count_password_reset_tokens_for_user(bigint)
-    OWNER TO postgres;
-
-CREATE PROCEDURE logging_schema.delete_all_login_log_entries_for_users(_user_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM logging_schema.login_log_table
-WHERE
-user_id = _user_id
-$BODY$;
-ALTER PROCEDURE logging_schema.delete_all_login_log_entries_for_users(bigint)
-    OWNER TO postgres;
-
-CREATE TABLE payment_schema.stripe_customer_creation_status
-(
-    stripe_customer_creation_status_id bigint NOT NULL,
+    stripe_subscription_client_secret_id bigint NOT NULL,
     user_id bigint NOT NULL,
-    status character varying(50) NOT NULL,
-    PRIMARY KEY (stripe_customer_creation_status_id)
+    client_secret character varying(50) NOT NULL,
+    PRIMARY KEY (stripe_subscription_client_secret_id)
 );
 
-ALTER TABLE IF EXISTS payment_schema.stripe_customer_creation_status
+ALTER TABLE IF EXISTS payment_schema.stripe_subscription_client_secret
     OWNER to postgres;
 
-ALTER TABLE IF EXISTS payment_schema.stripe_customer_creation_status
-    ALTER COLUMN stripe_customer_creation_status_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
+ALTER TABLE IF EXISTS payment_schema.stripe_subscription_client_secret
+    ALTER COLUMN stripe_subscription_client_secret_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
 
-ALTER TABLE IF EXISTS payment_schema.stripe_customer_creation_status
+ALTER TABLE IF EXISTS payment_schema.stripe_subscription_client_secret
     ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
     REFERENCES user_schema."user" (user_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 CREATE INDEX IF NOT EXISTS fki_user_id_fkey
-    ON payment_schema.stripe_customer_creation_status(user_id);
+    ON payment_schema.stripe_subscription_client_secret(user_id);
 
-CREATE FUNCTION payment_schema.check_stripe_customer_creation_status(_user_id bigint)
-    RETURNS bigint
+CREATE PROCEDURE payment_schema.add_stripe_subscription_client_secret(_user_id bigint, _client_secret character varying)
+LANGUAGE 'sql'
+AS $BODY$
+INSERT INTO payment_schema.stripe_subscription_client_secret
+(user_id, client_secret)
+VALUES
+(_user_id, _client_secret)
+$BODY$;
+ALTER PROCEDURE payment_schema.add_stripe_subscription_client_secret(bigint, character varying)
+    OWNER TO postgres;
+
+CREATE PROCEDURE payment_schema.delete_stripe_subscription_client_secret(_user_id bigint)
+LANGUAGE 'sql'
+AS $BODY$
+DELETE FROM payment_schema.stripe_subscription_client_secret
+WHERE user_id = _user_id
+$BODY$;
+ALTER PROCEDURE payment_schema.delete_stripe_subscription_client_secret(bigint)
+    OWNER TO postgres;
+
+CREATE FUNCTION payment_schema.get_stripe_subscription_client_secret(_user_id bigint)
+    RETURNS character varying
     LANGUAGE 'sql'
     
 AS $BODY$
-SELECT stripe_customer_creation_status_id
-FROM payment_schema.stripe_customer_creation_status
+SELECT client_secret
+FROM payment_schema.stripe_subscription_client_secret
 WHERE user_id = _user_id
 $BODY$;
 
-ALTER FUNCTION payment_schema.check_stripe_customer_creation_status(bigint)
+ALTER FUNCTION payment_schema.get_stripe_subscription_client_secret(bigint)
     OWNER TO postgres;
 
-CREATE PROCEDURE payment_schema.add_stripe_customer_creation_status(_user_id bigint, _status character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO payment_schema.stripe_customer_creation_status
-(user_id, status)
-VALUES
-(_user_id, _status)
-$BODY$;
-ALTER PROCEDURE payment_schema.add_stripe_customer_creation_status(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE PROCEDURE payment_schema.delete_stripe_customer_creation_status(_user_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM payment_schema.stripe_customer_creation_status
-WHERE user_id = _user_id
-$BODY$;
-ALTER PROCEDURE payment_schema.delete_stripe_customer_creation_status(bigint)
-    OWNER TO postgres;
-
-CREATE TABLE payment_schema.stripe_subscription_creation_status
-(
-    stripe_subscription_creation_status_id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    status character varying(50) NOT NULL,
-    PRIMARY KEY (stripe_subscription_creation_status_id)
-);
-
-ALTER TABLE IF EXISTS payment_schema.stripe_subscription_creation_status
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS payment_schema.stripe_subscription_creation_status
-    ALTER COLUMN stripe_subscription_creation_status_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-CREATE PROCEDURE payment_schema.add_stripe_subscription_creation_status(_user_id bigint, _status character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO payment_schema.stripe_subscription_creation_status
-(user_id, status)
-VALUES
-(_user_id, _status)
-$BODY$;
-ALTER PROCEDURE payment_schema.add_stripe_subscription_creation_status(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE PROCEDURE payment_schema.delete_stripe_subscription_creation_status(_user_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM payment_schema.stripe_subscription_creation_status
-WHERE user_id = _user_id
-$BODY$;
-ALTER PROCEDURE payment_schema.delete_stripe_subscription_creation_status(bigint)
-    OWNER TO postgres;
-
-CREATE TABLE payment_schema.basic_account_create_stripe_customer_id_status
-(
-    basic_account_create_stripe_customer_id_status_id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    status character varying(50) NOT NULL,
-    PRIMARY KEY (basic_account_create_stripe_customer_id_status_id)
-);
-
-ALTER TABLE IF EXISTS payment_schema.basic_account_create_stripe_customer_id_status
-    OWNER to postgres;
-
-ALTER TABLE IF EXISTS payment_schema.basic_account_create_stripe_customer_id_status
-    ALTER COLUMN basic_account_create_stripe_customer_id_status_id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 );
-
-ALTER TABLE IF EXISTS payment_schema.basic_account_create_stripe_customer_id_status
-    ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
-    REFERENCES user_schema."user" (user_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS fki_user_id_fkey
-    ON payment_schema.basic_account_create_stripe_customer_id_status(user_id);
-
-CREATE PROCEDURE payment_schema.add_basic_account_create_stripe_customer_id_status(_user_id bigint, _status character varying)
-LANGUAGE 'sql'
-AS $BODY$
-INSERT INTO payment_schema.basic_account_create_stripe_customer_id_status
-(user_id, status)
-VALUES
-(_user_id, _status)
-$BODY$;
-ALTER PROCEDURE payment_schema.add_basic_account_create_stripe_customer_id_status(bigint, character varying)
-    OWNER TO postgres;
-
-CREATE PROCEDURE payment_schema.delete_basic_account_create_stripe_customer_id_status(_user_id bigint)
-LANGUAGE 'sql'
-AS $BODY$
-DELETE FROM payment_schema.basic_account_create_stripe_customer_id_status
-WHERE
-user_id = _user_id
-$BODY$;
-ALTER PROCEDURE payment_schema.delete_basic_account_create_stripe_customer_id_status(bigint)
-    OWNER TO postgres;
-
-CREATE FUNCTION payment_schema.check_basic_account_create_stripe_customer_id_status(_user_id bigint)
-    RETURNS bigint
-    LANGUAGE 'sql'
-    
-AS $BODY$
-SELECT basic_account_create_stripe_customer_id_status_id
-FROM payment_schema.basic_account_create_stripe_customer_id_status
-WHERE user_id = _user_id
-$BODY$;
-
-ALTER FUNCTION payment_schema.check_basic_account_create_stripe_customer_id_status(bigint)
-    OWNER TO postgres;
-
-CREATE SCHEMA logging_schema
-    AUTHORIZATION postgres;
+ALTER TABLE payment_schema.stripe_subscription_client_secret
+    ALTER COLUMN client_secret TYPE text COLLATE pg_catalog."default";

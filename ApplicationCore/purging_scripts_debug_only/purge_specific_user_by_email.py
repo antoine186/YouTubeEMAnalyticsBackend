@@ -97,6 +97,11 @@ def purge_specific_user_by_email(email, delete_remote_stripe_entities):
                 existing_stripe_customer_id = stripe_customer_search_result._last_response.data['data'][0]['id']
                 stripe.Customer.delete(existing_stripe_customer_id)
 
+    delete_stripe_subscription_client_secret_sp = 'CALL payment_schema.delete_stripe_subscription_client_secret(:user_id)'
+
+    db.session.execute(text(delete_stripe_subscription_client_secret_sp), {'user_id': user_id[0][0]})
+    db.session.commit()
+
     delete_stripe_customer_sp = 'CALL payment_schema.delete_stripe_customer(:user_id)'
 
     db.session.execute(text(delete_stripe_customer_sp), {'user_id': user_id[0][0]})

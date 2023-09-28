@@ -38,13 +38,6 @@ def subscription_create():
 
         user_id = db.session.execute(text(get_user_id), {'username': payload['emailAddress']}).fetchall()
 
-        """
-        delete_stripe_subscription_creation_status_sp = 'CALL payment_schema.delete_stripe_subscription_creation_status(:user_id)'
-
-        db.session.execute(text(delete_stripe_subscription_creation_status_sp), {'user_id': user_id[0][0]})
-        db.session.commit()
-        """
-
         subscription_halted_creation_cleanup_for_user(user_id[0][0])
 
         add_stripe_subscription_creation_status_sp = 'CALL payment_schema.add_stripe_subscription_creation_status(:user_id,:status)'
@@ -81,6 +74,11 @@ def subscription_create():
             )
             print('Create sub with free trial')
 
+        delete_stripe_subscription_client_secret_sp = 'CALL payment_schema.delete_stripe_subscription_client_secret(:user_id)'
+
+        db.session.execute(text(delete_stripe_subscription_client_secret_sp), {'user_id': user_id[0][0]})
+        db.session.commit()
+
         if user_session_validated:
             operation_response = {
                 "operation_success": True,
@@ -90,6 +88,11 @@ def subscription_create():
                 },
                 "error_message": "" 
             }
+
+            add_stripe_subscription_client_secret_sp = 'CALL payment_schema.add_stripe_subscription_client_secret(:user_id,:client_secret)'
+
+            db.session.execute(text(add_stripe_subscription_client_secret_sp), {'user_id': user_id[0][0], 'client_secret': subscription.latest_invoice.payment_intent.client_secret})
+            db.session.commit()
         else:
             operation_response = {
                 "operation_success": True,
@@ -99,6 +102,11 @@ def subscription_create():
                 },
                 "error_message": "" 
             }
+
+            add_stripe_subscription_client_secret_sp = 'CALL payment_schema.add_stripe_subscription_client_secret(:user_id,:client_secret)'
+
+            db.session.execute(text(add_stripe_subscription_client_secret_sp), {'user_id': user_id[0][0], 'client_secret': subscription.pending_setup_intent.client_secret})
+            db.session.commit()
 
         # Commented out because this is handled in storing new subscription
         #delete_stripe_subscription_creation_status_sp = 'CALL payment_schema.delete_stripe_subscription_creation_status(:user_id)'

@@ -11,6 +11,9 @@ def stripe_customer_shallow_remote_cleanup():
     This function is to purge an entire stripe customer when creation was halted halfway
 
     This is a shallow version of dangling_account_without_stripe_account_cleanup()
+    
+    We don't run basic_account_create_stripe_customer_id_status stored procedure because this is
+    a shallow cleanup function. It doesn't make perfect sense, but is the best solution so far
     """
     all_unfinished_stripe_customer_creations = StripeCustomerCreationStatus.query.all()
 
@@ -45,6 +48,11 @@ def stripe_customer_shallow_remote_cleanup():
                 delete_subscription_sp = 'CALL payment_schema.delete_subscription(:internal_stripe_customer_id)'
 
                 db.session.execute(text(delete_subscription_sp), {'internal_stripe_customer_id': internal_stripe_customer_id[0][0]})
+                db.session.commit()
+
+                delete_stripe_subscription_client_secret_sp = 'CALL payment_schema.delete_stripe_subscription_client_secret(:user_id)'
+
+                db.session.execute(text(delete_stripe_subscription_client_secret_sp), {'user_id': unfinished_stripe_customer_creation.user_id})
                 db.session.commit()
 
                 delete_stripe_customer_sp = 'CALL payment_schema.delete_stripe_customer(:user_id)'
