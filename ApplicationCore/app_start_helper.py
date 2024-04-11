@@ -20,7 +20,7 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = "noreply@emomachines.xyz"
-app.config['MAIL_PASSWORD'] = "jdztxwrikhatwrcn"
+app.config['MAIL_PASSWORD'] = ""
 
 mail = Mail(app)
 
@@ -40,28 +40,25 @@ nn = Container.pipeline_neural_network()
 model_max_characters_allowed = 600
 model_max_words_allowed = 300
 
-DEVELOPER_KEY = "AIzaSyAodk67-ODzonfyWsYp4gnuasgxAm0cNJI"
+DEVELOPER_KEY = ""
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
 youtube_object = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
                                         developerKey = DEVELOPER_KEY)
 
-# Emotional Machines API Key
-# rapidapi_key = "2b15b711e0msh4c5b33d95d9470dp1d558bjsn4dc897e8f19f"
-
 # antoine.tian@emomachines.xyz API Key
-rapidapi_key = "ddf2e48d8emsh02dbd4229cc9355p1a54eajsn7072e5a726e3"
+rapidapi_key = ""
 
-openai.api_key = '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'
+openai.api_key = ''
 
-cohere_api_key = 'GDG3CKH8PDAoKuUsqnzKelIZHi5kiqrpKfTuVwzi'
+cohere_api_key = ''
 
 cohere_client = cohere.Client(cohere_api_key)
 
-youtube_comments_rapidapi_url = "https://yt-api.p.rapidapi.com/comments"
+youtube_comments_rapidapi_url = ""
 
-chatgpt4_rapidapi_url = "https://chatgpt-gpt4-ai-chatbot.p.rapidapi.com/ask"
+chatgpt4_rapidapi_url = ""
 
 # Switch variables below between prod and debug
 
