@@ -14,9 +14,9 @@ DEBUG = True
 debug_switched_on = True
 
 if debug_switched_on:
-    stripe_api_key = 'sk_test_51MyG0LFAAs2DFWSVpgT2ghJhCoQnlrO1Y3F29CHsGJkpyaZ8Qo5b7V2hRn8cLmqj4pWmYAI0eLKGWBZubjDsn8cw00or9QmyMd'
+    stripe_api_key = ''
 else:
-    stripe_api_key = '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'
+    stripe_api_key = ''
 
 # Connect to the database
 # postgres://{user}:{password}@{hostname}:{port}/{database-name}
